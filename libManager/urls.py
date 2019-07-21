@@ -20,6 +20,7 @@ from libManager import views
 urlpatterns = [
     # url(r'^index/$', views.index),
     url(r'^addBook/$', views.add_book),
+    url(r'^addBook/init/$', views.init),
     url(r'^save/$', views.save)
     # url(r'^add/init/$', views.init),
     # url(r'^add/save/$', views.save),

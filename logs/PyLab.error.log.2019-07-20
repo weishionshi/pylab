@@ -1,0 +1,6 @@
+2019-07-20 21:14:17,467 - [simpleLogger] - [ERROR] - views - save - test error log
+2019-07-20 21:35:28,766 - [simpleLogger] - [ERROR] - views.save - Traceback (most recent call last):
+  File "/Users/ymbp/Dev/workspace_py/PyLab/libManager/views.py", line 26, in save
+    logger.debug("author:" + author)
+TypeError: must be str, not NoneType
+

@@ -35,7 +35,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'libManager'
+    'libManager',
+    'PyLab',
+    'iso',
 ]
 
 MIDDLEWARE = [
@@ -71,20 +73,39 @@ WSGI_APPLICATION = 'PyLab.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    # }
 
+DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'lib': {
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
         'NAME': 'library',
         'USER': 'library',
         'PASSWORD': 'lib123',
         'HOST': 'localhost',  # set to empty string for localhost
         'PORT': '3306',  # 数据库使用的端口
+    },
+    'iso': {
+        'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
+        'NAME': 'iso',
+        'USER': 'iso',
+        'PASSWORD': 'iso123',
+        'HOST': 'localhost',  # set to empty string for localhost
+        'PORT': '3306',  # 数据库使用的端口
     }
+}
+
+DATABASE_ROUTERS = ['PyLab.database_router.DatabaseAppsRouter']
+
+DATABASE_APPS_MAPPING = {
+    # example:
+    # 'app_name':'database_name',
+
+    'admin': 'lib',
+    'libManager': 'lib',
+    'iso': 'iso',
 }
 
 # Password validation
