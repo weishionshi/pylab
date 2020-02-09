@@ -1,0 +1,5 @@
+logs/
+.idea
+*.log
+config/local_config.ini
+venv/

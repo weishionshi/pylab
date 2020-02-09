@@ -1,0 +1,87 @@
+import paramiko
+import os
+from util.os.OsUtil import get_all_files_in_local_dir
+
+
+class SSHClient:
+
+    def init_ssh_client(self):
+        ssh = paramiko.SSHClient()
+        # 创建一个ssh的白名单
+        know_host = paramiko.AutoAddPolicy()
+        # 加载创建的白名单
+        ssh.set_missing_host_key_policy(know_host)
+
+        # 连接服务器
+        ssh.connect(
+            hostname=self.host,
+            port=self.port,
+            username=self.username,
+            password=self.password,
+        )
+        return ssh
+
+    def init_sftp_client(self):
+        sf = paramiko.Transport((self.host, 22))
+        sf.connect(username=self.username, password=self.password)
+        sftp = paramiko.SFTPClient.from_transport(sf)
+        return sftp
+
+    def __init__(self, host, username, password, port=22):
+        self.host = host
+        self.username = username
+        self.password = password
+        self.port = port
+        self.sshClient = self.init_ssh_client()
+        self.sftpClient = self.init_sftp_client()
+        super(SSHClient, self).__init__()
+
+    def __del__(self):
+        self.sshClient.close()
+        self.sftpClient.close()
+
+    def exec_cmd(self, cmd):
+        stdin, stdout, stderr = self.sshClient.exec_command(cmd)
+        channel = stdout.channel
+        status = channel.recv_exit_status()
+        print("-" * 60)
+        print("host: %s,   command: %s\n" % (self.host, cmd))
+        print(stdout.read().decode())
+        print(stderr.read().decode())
+        print("exit status: %d" % status)
+        print("-" * 60)
+
+     # 没有返回值，执行后台命令时不会阻塞
+    def exec_cmd_nb(self, cmd):
+        transport = self.sshClient.get_transport()
+        channel = transport.open_session()
+        channel.exec_command(cmd)
+        print("-" * 60)
+        print("host: %s,  transport command: %s\n" % (self.host, cmd))
+        print("-" * 60)
+
+    # get单个文件
+    # 注意remotefile, localfile一定是文件，不能是目录,localfile指定本地将要保存的文件名，可以与remotefile的名字不一样
+    def sftp_get(self, remotefile, localfile):
+        self.sftpClient.get(remotefile, localfile)
+
+    # put单个文件.如果远端文件已存在则覆盖
+    def sftp_put(self, localfile, remotefile):
+        self.sftpClient.put(localfile, remotefile)
+
+    # put all files in local dir to remote dir
+    def sftp_put_dir(self, local_dir, remote_dir):
+
+        # 去掉路径字符穿最后的字符'/'，如果有的话
+        if remote_dir[-1] == '/':
+            remote_dir = remote_dir[0:-1]
+
+        # 获取本地指定目录及其子目录下的所有文件
+        all_files = get_all_files_in_local_dir(local_dir)
+        # 依次put每一个文件
+        for file in all_files:
+            filename = os.path.split(file)[-1]
+            remote_filename = remote_dir + '/' + filename
+            print(u'Put文件%s，传输中...' % filename)
+            self.sftpClient.put(file, remote_filename)
+            print('put success:from local [' + file + '] to remote [' + remote_filename + ']')
