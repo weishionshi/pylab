@@ -45,19 +45,19 @@ class SSHClient:
         channel = stdout.channel
         status = channel.recv_exit_status()
         print("-" * 60)
-        print("host: %s,   command: %s\n" % (self.host, cmd))
+        print("host: [%s],   command: [%s]\n" % (self.host, cmd))
         print(stdout.read().decode())
         print(stderr.read().decode())
         print("exit status: %d" % status)
         print("-" * 60)
 
-     # 没有返回值，执行后台命令时不会阻塞
+    # 没有返回值，执行后台命令时不会阻塞
     def exec_cmd_nb(self, cmd):
         transport = self.sshClient.get_transport()
         channel = transport.open_session()
         channel.exec_command(cmd)
         print("-" * 60)
-        print("host: %s,  transport command: %s\n" % (self.host, cmd))
+        print("host: [%s],  transport command: [%s]\n" % (self.host, cmd))
         print("-" * 60)
 
     # get单个文件
@@ -76,12 +76,24 @@ class SSHClient:
         if remote_dir[-1] == '/':
             remote_dir = remote_dir[0:-1]
 
+        # 如果目录不存在，那么创建
+        if not self.check_if_dir_exist(remote_dir=remote_dir):
+            print('远端 [%s] 目录不存在,程序先创建' % remote_dir)
+            self.sshClient.exec_command('mkdir -p ' + remote_dir)
+
         # 获取本地指定目录及其子目录下的所有文件
         all_files = get_all_files_in_local_dir(local_dir)
         # 依次put每一个文件
         for file in all_files:
             filename = os.path.split(file)[-1]
             remote_filename = remote_dir + '/' + filename
-            print(u'Put文件%s，传输中...' % filename)
+            print(u'Put文件[%s]，传输中...' % filename)
             self.sftpClient.put(file, remote_filename)
             print('put success:from local [' + file + '] to remote [' + remote_filename + ']')
+
+    def check_if_dir_exist(self, remote_dir):
+        stdin, stdout, stderr = self.sshClient.exec_command('ls ' + remote_dir)
+        if stdout.readline() != '':
+            return True
+        else:
+            return False
