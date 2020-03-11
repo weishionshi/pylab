@@ -1,12 +1,14 @@
 # _*_coding:utf-8_*_
-# from django.conf import settings
-# import libManager.common.util.LoggerManager
-import sys
+from django.conf import settings
+from util.logging.logger_manager import LoggerFactory
+import time
 import logging
 from util.ReadConfig import get_config_parser
-from util.ssh import SSHClient
+from util.ssh import ssh_client
 from util.os import OsUtil
 from util.db.pymysql_builder import PyMysqlFactory
+import telnetlib
+import os
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger1 = logging.getLogger(__name__)
@@ -35,7 +37,7 @@ def test_ssh_client():
     sections_map = get_config_parser("local_config_puyin.ini")
     items = sections_map['fintcs-query-service']
     logger1.info("connect via ssh:" + items['host'] + "," + items['user'])
-    client = SSHClient.SSHClient(items['host'], items['user'], items['password'], 22)
+    client = ssh_client.SSHClient(items['host'], items['user'], items['password'], 22)
     ssh = getattr(client, 'sshClient')
     sftp = getattr(client, 'sftpClient')
 
@@ -70,14 +72,49 @@ def test_pymysql():
     cursor.close()
 
 
+def test_datetime():
+    print("time.time(): ", time.time())
+    print("time.localtime(time.time()): ", time.localtime(time.time()))
+    print("time.asctime(): ", time.asctime())
+    print("time.ctime(): ", time.ctime())
+    print("time.ctime(0): ", time.ctime(0))
+
+
+def test_list():
+    test_list = ['a', 'b', 'c']
+    print(test_list)
+
+    print('test_list.index(''a'')', test_list.index('b'))
+    print('test_list.reverse()', test_list.reverse())
+    print('d' in test_list)
+
+
+def test_telnet():
+    # result = telnetlib.Telnet('192.168.76.175', '8076')
+    result = telnetlib.Telnet('127.0.0.1', '8076')
+    print('result', result)
+
+def test_logger():
+    logger = LoggerFactory('seepp').get_logger()
+    logger.debug("debug log")
+    logger.info("info log")
+    logger.error("error log")
+
+def test_os_path():
+    print(os.path.dirname(os.path.abspath(__file__)))
+    print(os.path.dirname(os.path.abspath('..')))
+
 if __name__ == '__main__':
     # print("BASE_DIR:" + settings.BASE_DIR)
-    # logger = libManager.common.util.LoggerManager.get_logger()
-    # logger.debug("debug log")
-    # logger.info("info log")
-    # logger.error("error log")
+
     # print ('date -s "'+sys.argv[1]+'"')
     # test_read_config()
     # test_ssh_client()
     # test_osutil()
-    test_pymysql()
+    # test_pymysql()
+    # test_datetime()
+    # test_list()
+    # test_telnet()
+    test_logger()
+    # test_os_path()
+

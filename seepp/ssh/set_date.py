@@ -1,6 +1,18 @@
 import threading
 import paramiko
+import os
 import sys
+from util.file import file_util
+from util.logging import logger_manager
+
+# logger = logger_manager.LoggerFactory().get_logger()
+BASE_DIR = os.path.dirname(os.getcwd())
+sys.path.append(BASE_DIR)
+
+# read config
+sections_map = file_util.LoadConfig.get_config_parser("local_config_ht.ini")
+service_list = sections_map['seepp']['services'].split('|')
+
 
 class paramikoThreading(threading.Thread):
     def __init__(self, command, host, username, password, port=22):
@@ -29,33 +41,27 @@ class paramikoThreading(threading.Thread):
 
         stdin, stdout, stderr = ssh.exec_command(self.command)
         print("*" * 60)
-        print("ip:%s,   command:%s,\n" % (self.host, self.command))
+        print("ip:[%s],   command:[%s],\n" % (self.host, self.command))
         print(stdout.read().decode())
         print("*" * 60)
         ssh.close()
 
 
-if __name__ == '__main__':
-    # from settings import hosts  # 调用配置文件配置文件为settings.py
-    hosts = [dict(host="192.168.76.158", username="root", password="caifu@123"),
-             #dict(host="192.168.76.188", username="root", password="caifu@123"),
-             dict(host="192.168.76.200", username="root", password="caifu@123"),
-             dict(host="192.168.76.175", username="root", password="caifu@123"),
-             dict(host="192.168.76.181", username="root", password="caifu@123")
-             #dict(host="192.168.76.184", username="root", password="caifu@123")
-             ]
+def set_date():
     try:
         # command = 'date -s "'+sys.argv[1]+'"'
-        command = 'date -s "20200213 14:18:50"'
+        command = 'date -s "20200302 10:49:30"'
     except IndexError:
-        print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:00"')
+        print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:20"')
+        #报错：logger.error('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:00"')
     else:
         t_pool = []
-        for host in hosts:
+        for service in service_list:
+            items = sections_map[service]
             t = paramikoThreading(
-                host=host.get("host", "localhost"),
-                username=host.get("username", "root"),
-                password=host.get("password", "caifu@123"),
+                host=items.get("host", "localhost"),
+                username=items.get("user", "root"),
+                password=items.get("password", "caifu@123"),
                 command=command
             )
             t_pool.append(t)
@@ -63,3 +69,8 @@ if __name__ == '__main__':
             t.start()
         for t in t_pool:
             t.join()
+
+
+if __name__ == '__main__':
+    # set date in parallel
+    set_date()
