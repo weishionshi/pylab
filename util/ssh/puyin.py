@@ -168,6 +168,26 @@ def upload_all_nmon():
         upload_nmon(service)
 
 
+def upload_node_exporter(service_name, local_ne_dir, remote_ne_dir):
+    # get connfig based on service_name
+    items = sections_map[service_name]
+
+    # init ssh client
+    logger.info("connect via ssh:" + items['host'] + "," + items['user'])
+    client = SSHClient(items['host'], items['user'], items['password'], 22)
+    client.sftp_put_dir(local_ne_dir, remote_ne_dir)
+
+    # change mode
+    client.exec_cmd('chmod -R 775 ' + remote_ne_dir)
+
+
+def upload_all_node_exporter():
+    service_list = sections_map['seepp']['services'].split('|')
+    logger.info("all services to deploy node_exporter:" + ','.join(service_list))
+    for service in service_list:
+        upload_node_exporter(service,r'/Users/ymbp/Downloads/node_exporter',r'/usr/local/node_exporter')
+
+
 def start_all_services():
     service_list = sections_map['seepp']['services'].split('|')
     logger.info("all services to start:" + ','.join(service_list))
@@ -222,7 +242,8 @@ def start_in_one():
 # ！！！执行前，先去顶部设置全局变量！！！
 # #########################
 if __name__ == '__main__':
-    upload_all_nmon()
+    # upload_all_nmon()
+    upload_all_node_exporter()
     # stop_all_services()
 
     # 一键启动所有：先启nmon监控，再起服务
