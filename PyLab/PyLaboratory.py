@@ -4,10 +4,13 @@ from util.logging.logger_manager import LoggerFactory
 import time
 import logging
 from util.ReadConfig import get_config_parser
+
 from util.ssh import ssh_client
 from util.os import OsUtil
 from util.db.pymysql_builder import PyMysqlFactory
+from util.file import file_util
 import telnetlib
+import zipfile
 import os
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -33,19 +36,32 @@ def test_read_config():
 '''
 
 
-def test_ssh_client():
-    sections_map = get_config_parser("local_config_puyin.ini")
-    items = sections_map['fintcs-query-service']
-    logger1.info("connect via ssh:" + items['host'] + "," + items['user'])
-    client = ssh_client.SSHClient(items['host'], items['user'], items['password'], 22)
-    ssh = getattr(client, 'sshClient')
-    sftp = getattr(client, 'sftpClient')
+def test_fetch_pkg():
+    local_dir = 'D:/swx/temp'
+    remote_dir = '/提交测试目录/销售系统/交易/V2020XX'
+    client = ssh_client.SSHClient('192.168.76.184', 'root', 'caifu@123', 22)
+    remote_latest_dir = client.find_latest_dir(remote_dir)
+    if remote_latest_dir:
+        print('result:' + remote_latest_dir)
 
-    # stdin, stdout, stderr = ssh.exec_command('pwd;date')
-    # res = stdout.read() + stderr.read()
-    # print(res.decode())
+    remote_latest_file_name = client.find_latest_file(remote_dir + '/' + remote_latest_dir)
 
-    client.exec_cmd('date')
+    if remote_latest_file_name:
+        remote_latest_file_path = remote_dir + '/' + remote_latest_dir + '/' + remote_latest_file_name
+        print('remote latest file path:' + remote_latest_file_path)
+        # download zip pkg from remote code server
+        local_zip_path = local_dir + '/' + remote_latest_file_name
+        print('local_zip_path:%s' % local_zip_path)
+        client.sftp_get(remote_latest_file_path, local_zip_path)
+
+        # unzip pkg
+        unzip(local_zip_path,local_dir)
+
+
+def unzip(file_path,extract_dir):
+    zf = zipfile.ZipFile(file_path,'r')
+    zf.extract(file_path,extract_dir)
+    zf.close()
 
 
 def test_osutil():
@@ -94,27 +110,30 @@ def test_telnet():
     result = telnetlib.Telnet('127.0.0.1', '8076')
     print('result', result)
 
+
 def test_logger():
     logger = LoggerFactory('seepp').get_logger()
     logger.debug("debug log")
     logger.info("info log")
     logger.error("error log")
 
+
 def test_os_path():
     print(os.path.dirname(os.path.abspath(__file__)))
     print(os.path.dirname(os.path.abspath('..')))
+
 
 if __name__ == '__main__':
     # print("BASE_DIR:" + settings.BASE_DIR)
 
     # print ('date -s "'+sys.argv[1]+'"')
     # test_read_config()
-    # test_ssh_client()
+    # test_fetch_pkg()
+    unzip(r'/root/tmp/FS50-FINFSS-QUERY-SERVICE.zip',r'/root/tmp')
     # test_osutil()
     # test_pymysql()
     # test_datetime()
     # test_list()
     # test_telnet()
-    test_logger()
+    # test_logger()
     # test_os_path()
-
