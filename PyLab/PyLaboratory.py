@@ -12,6 +12,7 @@ from util.file import file_util
 import telnetlib
 import zipfile
 import os
+import shutil
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger1 = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ def test_read_config():
 
 
 def test_fetch_pkg():
-    local_dir = 'D:/swx/temp'
+    local_dir = 'D:/swx/1_hundsun/tmp'
     remote_dir = '/提交测试目录/销售系统/交易/V2020XX'
     client = ssh_client.SSHClient('192.168.76.184', 'root', 'caifu@123', 22)
     remote_latest_dir = client.find_latest_dir(remote_dir)
@@ -55,14 +56,24 @@ def test_fetch_pkg():
         client.sftp_get(remote_latest_file_path, local_zip_path)
 
         # unzip pkg
-        unzip(local_zip_path,local_dir)
+        unzip(local_zip_path,local_zip_path.replace(r'.zip',''))
 
+        # deploy jar and start shell to remote
 
-def unzip(file_path,extract_dir):
-    zf = zipfile.ZipFile(file_path,'r')
-    zf.extract(file_path,extract_dir)
+def unzip(zip_file_path,extract_dir):
+    zf = zipfile.ZipFile(zip_file_path,'r')
+    # zf.extract(file_path,extract_dir)
+    zf.extractall(extract_dir)
     zf.close()
 
+def test_os():
+    files = os.listdir(r'D:/logs')
+    logger1.info('files:'+ files[0] + ',' + os.listdir(r'D:/logs')[1])
+    join_path = os.path.join("D:/swx/1_hundsun/sftp","application") # TypeError: not all arguments converted during string formatting
+    logger1.info("join path:%s" %join_path)
+    if os.path.exists(r'D:/swx/1_hundsun/tmp/fintcs-query-service-181'):
+        shutil.rmtree(r'D:/swx/1_hundsun/tmp/fintcs-query-service-181')
+    os.mkdir(r'D:/swx/1_hundsun/tmp/fintcs-query-service-181')
 
 def test_osutil():
     local_dir = r'D:\logs'
@@ -123,13 +134,18 @@ def test_os_path():
     print(os.path.dirname(os.path.abspath('..')))
 
 
+def test_regex():
+    cmd = r'sed -i "s/%s.*\.jar$/%s/g" %s/springboot/%s'
+    cmd2 = 'nohup sh %s/springboot/%s>%s/nohup-$(date "+%%Y%%m%%d-%%H%%M%%S").log 2>&1 &'
+    print(cmd %('fintcs-query-service' ,'fintcs-query-service-1.1.1.jar' ,r'/home/see/workspace/fintcs-query-service','startFSDPL_BOOT.sh'))
+    print(cmd2 % ('aaa', 'bbb', 'ccc'))
 if __name__ == '__main__':
     # print("BASE_DIR:" + settings.BASE_DIR)
 
     # print ('date -s "'+sys.argv[1]+'"')
     # test_read_config()
     # test_fetch_pkg()
-    unzip(r'/root/tmp/FS50-FINFSS-QUERY-SERVICE.zip',r'/root/tmp')
+    # unzip(r'D:\swx\temp\FS50-FINFSS-QUERY-SERVICE-V202003-00-000-product-20200331-e4732b2eaaf88d584c4952c28cc9f8447b08857c.zip','application/fintcs-query-service-5.1.3.0-SNAPSHOT.jar',r'D:\swx\temp\fintcs-query-service')
     # test_osutil()
     # test_pymysql()
     # test_datetime()
@@ -137,3 +153,5 @@ if __name__ == '__main__':
     # test_telnet()
     # test_logger()
     # test_os_path()
+    # test_os()
+    test_regex()
