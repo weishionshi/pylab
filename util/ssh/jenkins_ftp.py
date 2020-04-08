@@ -50,7 +50,8 @@ class Ftp:
         self.ftp.login(user, passwd)
         print(self.ftp.welcome)
 
-    def download_file(self, local_file, remote_file):  # 下载指定目录下的指定文件
+    # 下载指定目录下的指定文件
+    def download_file(self, local_file, remote_file):
         file_handler = open(local_file, 'wb')
         print(file_handler)
         # self.ftp.retrbinary("RETR %s" % (remote_file), file_handler.write)#接收服务器上文件并写入本地文件
@@ -91,10 +92,10 @@ class Ftp:
 
 def download_pkg(service_name):
     items = sections_map[service_name]
-    ftp = Ftp(items['host'], 1111)
+    ftp = Ftp(items['host'], int(items['ftp_port']))
     ftp.login(items['user'], items['password'])
-    # ftp.download_file('/tmp/test.sql', '/提交测试目录/销售系统/脚本/标准库脚本/oracle/02_基金行业/FS5.0-FINFSS-LCS-STDLIB-ORACLE-02-5.1.2.0.sql')
-    ftp.download_file('/tmp/test.sql', '/tmp/finpss-omms-app/finoss.log')
+    ftp.download_file('/tmp/test2.sql', '/提交测试目录/销售系统/脚本/标准库脚本/oracle/02_基金行业/FS5.0-FINFSS-LCS-STDLIB-ORACLE-02-5.1.2.0.sql')
+    # ftp.download_file('/tmp/test.sql', '/tmp/finpss-omms-app/finoss.log')
     ftp.close()
 
 
