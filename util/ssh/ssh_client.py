@@ -66,6 +66,7 @@ class SSHClient:
         self.sftpClient.get(remotefile, localfile)
 
     # put单个文件.如果远端文件已存在则覆盖
+    # 注意：两个入参都必须是文件，而不能是目录，否则报错
     def sftp_put(self, localfile, remotefile):
         self.sftpClient.put(localfile, remotefile)
 
@@ -97,3 +98,39 @@ class SSHClient:
             return True
         else:
             return False
+
+    # get latest modified folder,not the full dir,just the single folder name
+    def find_latest_dir(self, base_dir):
+        cmd = 'ls ' + base_dir + ' -lt|grep ^d|head -1'
+        stdin, stdout, stderr = self.sshClient.exec_command(cmd)
+        stdout_str = stdout.read().decode()
+        stderr_str = stderr.read().decode()
+        self.___print_exec_result(cmd, stdout_str, stderr_str)
+
+        if stdout.channel.recv_exit_status() == 0 and stdout_str != '':
+            return stdout_str.split(' ')[-1].replace('\n', '').replace('\r', '')
+        else:
+            return False
+        # TODO,异常处理
+
+    # get latest modified file name
+    def find_latest_file(self, base_dir):
+        cmd = 'ls ' + base_dir + ' -lt|grep ^-|head -1'
+        stdin, stdout, stderr = self.sshClient.exec_command(cmd)
+        stdout_str = stdout.read().decode()
+        stderr_str = stderr.read().decode()
+        self.___print_exec_result(cmd, stdout_str, stderr_str)
+
+        if stdout.channel.recv_exit_status() == 0 and stdout_str != '':
+            return stdout_str.split(' ')[-1].replace('\n', '').replace('\r', '')
+        else:
+            return False
+        # TODO,异常处理
+
+    # print exec result
+    def ___print_exec_result(self, cmd, stdout, stderr):
+        print("-" * 60)
+        print("host: [%s],   command: [%s]\n" % (self.host, cmd))
+        print('stdout:' + stdout)
+        print('stderr:' + stderr)
+        print("-" * 60)
