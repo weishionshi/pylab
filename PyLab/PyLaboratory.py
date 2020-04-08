@@ -40,7 +40,7 @@ def test_read_config():
 def test_fetch_pkg():
     local_dir = 'D:/swx/1_hundsun/tmp'
     remote_dir = '/提交测试目录/销售系统/交易/V2020XX'
-    client = ssh_client.SSHClient('192.168.76.184', 'root', 'caifu@123', 22)
+    client = ssh_client.SSHClient('192.1.1.1', 'username', 'pwd', 22)
     remote_latest_dir = client.find_latest_dir(remote_dir)
     if remote_latest_dir:
         print('result:' + remote_latest_dir)
