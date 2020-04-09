@@ -3,7 +3,7 @@ from util.ssh.SSHThread import ParamikoThreading
 import logging
 import os
 from util.ssh.ssh_client import SSHClient
-from util.os.OsUtil import get_all_files_in_local_dir
+from util.os.os_util import get_all_files_in_local_dir
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
