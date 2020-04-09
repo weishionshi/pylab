@@ -6,7 +6,7 @@ import logging
 from util.ReadConfig import get_config_parser
 
 from util.ssh import ssh_client
-from util.os import OsUtil
+from util.os import os_util
 from util.db.pymysql_builder import PyMysqlFactory
 from util.file import file_util
 import telnetlib
@@ -78,7 +78,7 @@ def test_os():
 def test_osutil():
     local_dir = r'D:\logs'
     logger1.info("file list:")
-    logger1.info(OsUtil.get_all_files_in_local_dir(local_dir))
+    logger1.info(os_util.get_all_files_in_local_dir(local_dir))
 
 
 def test_pymysql():
