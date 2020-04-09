@@ -1,6 +1,6 @@
 import paramiko
 import os
-from util.os.OsUtil import get_all_files_in_local_dir
+from util.os.os_util import get_all_files_in_local_dir
 
 
 class SSHClient:
