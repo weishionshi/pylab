@@ -1,5 +1,5 @@
 import sys
-from util.ssh.jenkins_deploy import JenkinsDeployer
+from seepp.ssh.jenkins_deploy import JenkinsDeployer
 
 if __name__ == '__main__':
     if sys.argv[1] == '' :
