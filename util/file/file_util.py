@@ -4,6 +4,7 @@ import logging
 
 
 class LoadConfig:
+    @staticmethod
     def get_config_parser(file_name):
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         logger = logging.getLogger(__name__)
@@ -19,10 +20,10 @@ class LoadConfig:
 
         for i in range(len(sections)):
             items = cf.items(sections[i])
-            itemsMap = {}
+            items_map = {}
             for j in range(len(items)):
-                itemsMap[items[j][0]] = items[j][1]
-            sections_map[sections[i]] = itemsMap
+                items_map[items[j][0]] = items[j][1]
+            sections_map[sections[i]] = items_map
         return sections_map
 
 
