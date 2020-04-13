@@ -13,10 +13,40 @@ import telnetlib
 import zipfile
 import os
 import shutil
+from ftplib import FTP
+import paramiko
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger1 = logging.getLogger(__name__)
 
+def test_sftp():
+    # host = '192.168.76.200'
+    # port = 22
+    host = '192.168.102.182'
+    port = 1111
+    transport = paramiko.Transport((host, port))
+    username = 'lcfstest'
+    password = '831K9FWD'
+
+    transport.connect(username=username, password=password)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+    print(sftp.listdir('/'))
+    print(sftp.listdir_attr('/提交测试目录'))
+
+
+def test_ftplib():
+    ftp = FTP()
+    ftp.connect(host='192.168.76.200', port=21,timeout=15)  # 连接
+    ftp.login(user='root',passwd='caifu@123')  # 登录，如果匿名登录则用空串代替即可
+    print(ftp.getwelcome())  # 打印欢迎信息
+
+
+def test_sshclient():
+    sections_map = file_util.LoadConfig.get_config_parser("local_config_puyin.ini")
+    items = sections_map['code_server_182']
+    client = ssh_client.SSHClient(items.get('host'),items.get('user'),items.get('password'),items.get('ftp_port'))
+    latest_dir = client.find_latest_dir('/提交测试目录/销售系统/交易/V2020XX')
+    print('latest dir:' + latest_dir)
 
 def test_read_config():
     sections_map = get_config_parser("local_config_puyin.ini")
@@ -139,7 +169,12 @@ def test_regex():
     cmd2 = 'nohup sh %s/springboot/%s>%s/nohup-$(date "+%%Y%%m%%d-%%H%%M%%S").log 2>&1 &'
     print(cmd %('fintcs-query-service' ,'fintcs-query-service-1.1.1.jar' ,r'/home/see/workspace/fintcs-query-service','startFSDPL_BOOT.sh'))
     print(cmd2 % ('aaa', 'bbb', 'ccc'))
+
+
 if __name__ == '__main__':
+    test_sshclient()
+    # test_sftp()
+    # test_ftplib()
     # print("BASE_DIR:" + settings.BASE_DIR)
 
     # print ('date -s "'+sys.argv[1]+'"')
@@ -154,4 +189,4 @@ if __name__ == '__main__':
     # test_logger()
     # test_os_path()
     # test_os()
-    test_regex()
+    # test_regex()
