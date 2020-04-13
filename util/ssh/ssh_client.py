@@ -5,7 +5,7 @@ from util.os.os_util import get_all_files_in_local_dir
 
 class SSHClient:
 
-    def init_ssh_client(self):
+    def __init_ssh_client(self):
         ssh = paramiko.SSHClient()
         # 创建一个ssh的白名单
         know_host = paramiko.AutoAddPolicy()
@@ -21,8 +21,8 @@ class SSHClient:
         )
         return ssh
 
-    def init_sftp_client(self):
-        sf = paramiko.Transport((self.host, 22))
+    def __init_sftp_client(self):
+        sf = paramiko.Transport((self.host, self.port))
         sf.connect(username=self.username, password=self.password)
         sftp = paramiko.SFTPClient.from_transport(sf)
         return sftp
@@ -32,8 +32,8 @@ class SSHClient:
         self.username = username
         self.password = password
         self.port = port
-        self.sshClient = self.init_ssh_client()
-        self.sftpClient = self.init_sftp_client()
+        self.sshClient = self.__init_ssh_client()
+        self.sftpClient = self.__init_sftp_client()
         super(SSHClient, self).__init__()
 
     def __del__(self):
