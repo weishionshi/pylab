@@ -11,7 +11,7 @@ CFG_FILE = 'local_config_puyin.ini'
 
 # init logger
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 # read config
 # sections_map = ReadConfig.get_config_parser("local_config_ht.ini")
@@ -44,7 +44,7 @@ class Ftp:
     ftp.set_pasv(False)
 
     def __init__(self, host, port=21):
-        self.ftp.connect(host, port)
+        self.ftp.connect(host, port, 10)
 
     def login(self, user, passwd):
         self.ftp.login(user, passwd)
@@ -91,14 +91,15 @@ class Ftp:
 
 
 def download_pkg(service_name):
+    local_file = r'D:\swx\1_hundsun\tmp\test2.sql'
     items = sections_map[service_name]
     ftp = Ftp(items['host'], int(items['ftp_port']))
     ftp.login(items['user'], items['password'])
-    ftp.download_file('/tmp/test2.sql', '/提交测试目录/销售系统/脚本/标准库脚本/oracle/02_基金行业/FS5.0-FINFSS-LCS-STDLIB-ORACLE-02-5.1.2.0.sql')
+    ftp.download_file(local_file, '/提交测试目录/销售系统/脚本/标准库脚本/oracle/02_基金行业/FS5.0-FINFSS-LCS-STDLIB-ORACLE-02-5.1.2.0.sql')
     # ftp.download_file('/tmp/test.sql', '/tmp/finpss-omms-app/finoss.log')
     ftp.close()
 
 
 if __name__ == '__main__':
-    # download_pkg('fintcs-query-service-181')
-    download_pkg('code_server_182')
+    download_pkg('fintcs-query-service-181')
+    # download_pkg('code_server_182')
