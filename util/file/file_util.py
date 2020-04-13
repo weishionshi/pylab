@@ -2,14 +2,15 @@ import configparser
 import os
 import logging
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
+
 
 class LoadConfig:
     @staticmethod
     def get_config_parser(file_name):
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        logger = logging.getLogger(__name__)
         # 获取当前文件所在目录的上两级目录
-        root_dir = os.path.dirname(os.path.abspath('..'))
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         sections_map = {}
         logger.debug("root dir:" + root_dir)
         logger.info("config file: " + root_dir + "/config/" + file_name)
