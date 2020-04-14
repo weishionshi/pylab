@@ -22,7 +22,7 @@ class SSHClient:
         return ssh
 
     def __init_sftp_client(self):
-        sf = paramiko.Transport((self.host, self.port))
+        sf = paramiko.Transport((self.host, int(self.port)))
         sf.connect(username=self.username, password=self.password)
         sftp = paramiko.SFTPClient.from_transport(sf)
         return sftp
