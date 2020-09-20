@@ -4,12 +4,13 @@ import pymysql
 
 
 class PyMysqlFactory:
-    def __init__(self, host, user, password, database):
+    def __init__(self, host, port, user, password, database):
         self.host = host
+        self.port = port
         self.user = user
         self.password = password
         self.database = database
-        self.conn = pymysql.connect(host=self.host, user=self.user, password=self.password, database=self.database,
+        self.conn = pymysql.connect(host=self.host, port=self.port, user=self.user, password=self.password, database=self.database,
                                     charset='utf8')
 
     def __del__(self):
@@ -20,7 +21,7 @@ class PyMysqlFactory:
 
 if __name__ == '__main__':
     # 连接database
-    conn = pymysql.connect(host='127.0.0.1', user='seepp', password='seepp876', database='seepp', charset='utf8')
+    conn = pymysql.connect(host='127.0.0.1', port='3306', user='seepp', password='seepp876', database='seepp', charset='utf8')
     # 得到一个可以执行SQL语句的光标对象
     cursor = conn.cursor()
     # 定义要执行的SQL语句
