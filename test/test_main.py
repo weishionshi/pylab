@@ -9,7 +9,7 @@ from util.ssh.ssh_client import SSHClient
 import logging
 import paramiko
 
-CFG_FILE = 'local_config_puyin.ini'
+CFG_FILE = 'local_config_pu1.ini'
 # init logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
@@ -40,10 +40,14 @@ class UnitTest(unittest.TestCase):
 
         client = SSHClient(items.get('host'), items.get('user'), items.get('password'),
                            items.get('ftp_port'))
-        print(client.sftpClient.listdir('/'))
+        print('listdir(/):' + client.sftpClient.listdir('/'))
         self.assertIsNotNone(client.sftpClient.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'),'cannot be null')
-        print(client.sftpClient.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'))
+        # print(client.sftpClient.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'))
         print('stat:' + str(client.sftpClient.stat(remote_path)))
+        latest_dir = remote_path + '/' + client.sftp_find_latest_dir(remote_path)
+        print('newest dir:' + latest_dir)
+        latest_file = latest_dir + '/' + client.sftp_find_latest_file(latest_dir)
+        print('latest_file:' + latest_file)
 
     @classmethod
     def setUpClass(cls):
@@ -68,6 +72,13 @@ class UnitTest(unittest.TestCase):
         test = 'abc'
         self.assertEqual('abc', test)
 
+    def test_string(self):
+        str1='ABCDefg hijk'
+        self.assertTrue('abc' in str1.lower())
+        print(''.lower())
+        print(''.lower() in str1.lower())
+        print('str: %s; int: %d' %('abc', 110))
+
     def test_ssh_client(self):
         items = self.__sections_map['pkg_server']
         client = SSHClient(items.get('host'), items.get('user'), items.get('password'),
@@ -75,6 +86,18 @@ class UnitTest(unittest.TestCase):
         latest_dir = client.find_latest_dir('/提交测试目录/销售系统/交易/V2020XX')
         logger.info('latest dir:' + latest_dir)
         self.assertIsNotNone(latest_dir, 'lastest cannot be null')
+
+    def test_restart_auto_test(self):
+        items = self.__sections_map['autotest']
+        client = SSHClient(items.get('host'), items.get('user'), items.get('password'),
+                           items.get('ssh_port'))
+        # stop process
+        cmd = items.get('deploy_path') + '/stop.sh'
+        client.exec_cmd(cmd)
+        # start process
+        cmd = 'nohup sh %s/%s >nohup.log 2>&1 &' % (items.get('deploy_path'), items.get('start_shell'))
+        client.exec_cmd_nb(cmd)
+        # self.assertIsNotNone(latest_dir, 'lastest cannot be null')
 
     @unittest.skip("skip this case.")
     def test_osutil(self):

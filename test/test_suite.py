@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(UnitTest))
 
     # 自定义case
-    tests = [UnitTest("test_sftp_in_class"), UnitTest("test_demo")]
+    tests = [UnitTest("test_restart_auto_test")]
     suite.addTests(tests)
 
     # txt版报告
