@@ -1,5 +1,6 @@
 import paramiko
 import os
+import stat
 from util.os.os_util import get_all_files_in_local_dir
 
 
@@ -127,7 +128,50 @@ class SSHClient:
             return False
         # TODO,异常处理
 
+    def sftp_find_latest_dir(self, base_dir):
+        """
+        find the newest dir under base_dir via sftp apis,based on modify time
+        @param base_dir:
+        @type base_dir:
+        @return: latest dir name
+        @rtype: string
+        """
+        f_list = self.sftpClient.listdir_attr(base_dir)
+
+        max_mtime = 0
+        for file in f_list:
+            # 判断远程文件是不是文件夹
+            if stat.S_ISDIR(file.st_mode):
+                if file.st_mtime > max_mtime:
+                    max_mtime = file.st_mtime
+                    latest_dir = file.filename
+                else:
+                    continue
+        return latest_dir
+
+    def sftp_find_latest_file(self, base_dir):
+        """
+        find the newest filename under base_dir via sftp apis,based on modify time
+        @param base_dir:
+        @type base_dir:
+        @return: file name
+        @rtype: string
+        """
+        f_list = self.sftpClient.listdir_attr(base_dir)
+        latest_f_name = ''
+        max_mtime = 0
+        for file in f_list:
+            # 判断远程文件是不是文件夹
+            if stat.S_ISREG(file.st_mode):
+                if file.st_mtime > max_mtime:
+                    max_mtime = file.st_mtime
+                    latest_f_name = file.filename
+                else:
+                    continue
+        return latest_f_name
+
     # print exec result
+    @staticmethod
     def ___print_exec_result(self, cmd, stdout, stderr):
         print("-" * 60)
         print("host: [%s],   command: [%s]\n" % (self.host, cmd))
