@@ -1,0 +1,368 @@
+test_sftp (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 25, in test_sftp
+    items = self.__sections_map['pkg_server']
+KeyError: 'pkg_server'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.001s
+
+FAILED (errors=1)
+test_sftp (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 25, in test_sftp
+    items = self.__sections_map['pkg_server']
+KeyError: 'pkg_server'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.013s
+
+FAILED (errors=1)
+ERROR
+
+======================================================================
+ERROR: setUpClass (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 39, in setUpClass
+    print('__section_map in setUpClass():' + str(cls.__section_map))
+AttributeError: type object 'UnitTest' has no attribute '_UnitTest__section_map'
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.000s
+
+FAILED (errors=1)
+test_sftp (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.264s
+
+OK
+test_sftp (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.271s
+
+OK
+test_sftp (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 27, in test_sftp
+    items.get('ftp_port'))
+  File "D:\dev\workspace_py\util\ssh\ssh_client.py", line 35, in __init__
+    self.sshClient = self.__init_ssh_client()
+  File "D:\dev\workspace_py\util\ssh\ssh_client.py", line 20, in __init_ssh_client
+    password=self.password,
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\util.py", line 280, in retry_on_signal
+    return function()
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+TimeoutError: [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。
+
+----------------------------------------------------------------------
+Ran 2 tests in 21.020s
+
+FAILED (errors=1)
+test_sftp (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 25, in test_sftp
+    transport = paramiko.Transport((items.get('host'), items.get('ftp_port')))
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\transport.py", line 409, in __init__
+    retry_on_signal(lambda: sock.connect((hostname, port)))
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\util.py", line 280, in retry_on_signal
+    return function()
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\transport.py", line 409, in <lambda>
+    retry_on_signal(lambda: sock.connect((hostname, port)))
+TypeError: an integer is required (got type str)
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.014s
+
+FAILED (errors=1)
+
+
+
+test_sftp (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 25, in test_sftp
+    transport = paramiko.Transport((items.get('host'), int(items.get('ftp_port'))))
+  File "D:\dev\workspace_py\venv\lib\site-packages\paramiko\transport.py", line 416, in __init__
+    "Unable to connect to {}: {}".format(hostname, reason)
+paramiko.ssh_exception.SSHException: Unable to connect to 192.168.47.182: [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。
+
+----------------------------------------------------------------------
+Ran 2 tests in 21.017s
+
+FAILED (errors=1)
+
+
+test_sftp (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 2.679s
+
+OK
+test_sftp_in_class (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.580s
+
+OK
+test_sftp_in_class (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp_in_class (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 46, in test_sftp_in_class
+    print('stat:' + client.sftpClient.stat(remote_path))
+TypeError: can only concatenate str (not "SFTPAttributes") to str
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.592s
+
+FAILED (errors=1)
+test_sftp_in_class (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.572s
+
+OK
+test_sftp_in_class (test.test_main.UnitTest) ... ERROR
+test_demo (test.test_main.UnitTest) ... ok
+
+======================================================================
+ERROR: test_sftp_in_class (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 47, in test_sftp_in_class
+    print('newest dir:' + client.sftp_find_latest_dir(remote_path))
+  File "D:\dev\workspace_py\util\ssh\ssh_client.py", line 144, in sftp_find_latest_dir
+    if stat.S_ISDIR(file.st_mode):
+AttributeError: 'str' object has no attribute 'st_mode'
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.874s
+
+FAILED (errors=1)
+test_sftp_in_class (test.test_main.UnitTest) ... test_sftp_in_class (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 25.904s
+
+OK
+test_sftp_in_class (test.test_main.UnitTest) ... ok
+test_demo (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.667s
+
+OK
+test_string (test.test_main.UnitTest) ... FAIL
+
+======================================================================
+FAIL: test_string (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\dev\workspace_py\test\test_main.py", line 77, in test_string
+    self.assertTrue('ABC' in str1)
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 1 test in 0.003s
+
+FAILED (failures=1)
+
+test_string (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK
+test_string (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+OK
+test_string (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+OK
+test_string (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK
+test_string (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 93, in test_restart_auto_test
+    items.get('ftp_port'))
+  File "E:\workspace_py\util\ssh\ssh_client.py", line 36, in __init__
+    self.sshClient = self.__init_ssh_client()
+  File "E:\workspace_py\util\ssh\ssh_client.py", line 21, in __init_ssh_client
+    password=self.password,
+  File "E:\workspace_py\venv\lib\site-packages\paramiko\client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "E:\workspace_py\venv\lib\site-packages\paramiko\util.py", line 280, in retry_on_signal
+    return function()
+  File "E:\workspace_py\venv\lib\site-packages\paramiko\client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+TimeoutError: [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。
+
+----------------------------------------------------------------------
+Ran 1 test in 21.019s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 93, in test_restart_auto_test
+    items.get('ftp_port'))
+  File "E:\workspace_py\util\ssh\ssh_client.py", line 36, in __init__
+    self.sshClient = self.__init_ssh_client()
+  File "E:\workspace_py\util\ssh\ssh_client.py", line 21, in __init_ssh_client
+    password=self.password,
+  File "E:\workspace_py\venv\lib\site-packages\paramiko\client.py", line 349, in connect
+    retry_on_signal(lambda: sock.connect(addr))
+  File "E:\workspace_py\venv\lib\site-packages\paramiko\util.py", line 280, in retry_on_signal
+    return function()
+  File "E:\workspace_py\venv\lib\site-packages\paramiko\client.py", line 349, in <lambda>
+    retry_on_signal(lambda: sock.connect(addr))
+TimeoutError: [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。
+
+----------------------------------------------------------------------
+Ran 1 test in 21.014s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 98, in test_restart_auto_test
+    cmd = 'nohup sh %s/%s >nohup-$(date "+%Y%m%d-%H%M%S").log 2>&1 &' %(items.get('deploy_path'),items.get('start_shell'))
+TypeError: not enough arguments for format string
+
+----------------------------------------------------------------------
+Ran 1 test in 0.364s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 98, in test_restart_auto_test
+    cmd = 'nohup sh %s/%s >nohup-$(date "+%Y%m%d-%H%M%S").log 2>&1 &' %(items.get('deploy_path'),items.get('start_shell'))
+TypeError: not enough arguments for format string
+
+----------------------------------------------------------------------
+Ran 1 test in 0.302s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 98, in test_restart_auto_test
+    cmd = 'nohup sh %s/%s >nohup-$(date "+%Y%m%d-%H%M%S").log 2>&1 &' %(items.get('deploy_path'),items.get('start_shell'))
+TypeError: not enough arguments for format string
+
+----------------------------------------------------------------------
+Ran 1 test in 0.243s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 98, in test_restart_auto_test
+    cmd = 'nohup sh %s/%s >nohup-$(date "+%Y%m%d-%H%M%S").log 2>&1 &' %(items.get('deploy_path'),items.get('start_shell'))
+TypeError: not enough arguments for format string
+
+----------------------------------------------------------------------
+Ran 1 test in 0.246s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_restart_auto_test (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 98, in test_restart_auto_test
+    cmd = 'nohup sh %s/%s >nohup-$(date "+%Y%m%d-%H%M%S").log 2>&1 &' %(items.get('deploy_path'),items.get('start_shell'))
+TypeError: not enough arguments for format string
+
+----------------------------------------------------------------------
+Ran 1 test in 0.221s
+
+FAILED (errors=1)
+test_restart_auto_test (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.233s
+
+OK
+test_restart_auto_test (test.test_main.UnitTest) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.298s
+
+OK
