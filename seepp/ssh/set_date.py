@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.getcwd())
 sys.path.append(BASE_DIR)
 
 # read config
-sections_map = file_util.LoadConfig.get_config_parser("local_config_ht.ini")
+sections_map = file_util.LoadConfig.get_config_parser("local_config_orientsec.ini")
 service_list = sections_map['seepp']['services'].split('|')
 
 
@@ -49,11 +49,11 @@ class paramikoThreading(threading.Thread):
 
 def set_date():
     try:
-        # command = 'date -s "'+sys.argv[1]+'"'
-        command = 'date -s "20200302 10:49:30"'
+        #command = 'date -s "'+sys.argv[1]+'"'
+        command = 'date -s "20200707 10:53:20"'
     except IndexError:
-        print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:20"')
-        #报错：logger.error('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:00"')
+        print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:30"')
+        #报错：logger.error('ERROR:please append datetime as param,e.g. set_date "20191111 12:00:00"')
     else:
         t_pool = []
         for service in service_list:
