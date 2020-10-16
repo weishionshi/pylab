@@ -1,4 +1,6 @@
 import threading
+from datetime import datetime
+
 import paramiko
 import os
 import sys
@@ -10,7 +12,7 @@ BASE_DIR = os.path.dirname(os.getcwd())
 sys.path.append(BASE_DIR)
 
 # read config
-sections_map = file_util.LoadConfig.get_config_parser("local_config_orientsec.ini")
+sections_map = file_util.LoadConfig.get_config_parser("local_config_pu1.ini")
 service_list = sections_map['seepp']['services'].split('|')
 
 
@@ -50,7 +52,8 @@ class paramikoThreading(threading.Thread):
 def set_date():
     try:
         #command = 'date -s "'+sys.argv[1]+'"'
-        command = 'date -s "20200707 10:53:20"'
+        time = datetime.now().strftime('%H:%M:%S')
+        command = 'date -s "20201009 %s"' % time
     except IndexError:
         print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:30"')
         #报错：logger.error('ERROR:please append datetime as param,e.g. set_date "20191111 12:00:00"')
