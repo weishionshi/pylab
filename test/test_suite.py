@@ -4,6 +4,8 @@
 # @time    : 2020/4/14 10:17
 # @file    : test_suite.py
 import unittest
+import datetime
+
 from test.test_main import UnitTest
 #from test.HTMLTestRunner import HTMLTestRunner
 
@@ -13,13 +15,16 @@ if __name__ == '__main__':
     # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(UnitTest))
 
     # 自定义case
-    tests = [UnitTest("test_restart_auto_test")]
+    tests = [UnitTest("test_string")]
     suite.addTests(tests)
 
     # txt版报告
     with open('UnittestTextReport.txt', 'a') as f:
         runner = unittest.TextTestRunner(stream=f, verbosity=2)
         runner.run(suite)
+
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+    print('date -s "20201009 %s"' % time)
 
     # html版报告,TODO:报错
     # with open('HTMLReport.html', 'w') as f:

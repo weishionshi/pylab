@@ -366,3 +366,59 @@ test_restart_auto_test (test.test_main.UnitTest) ... ok
 Ran 1 test in 0.298s
 
 OK
+test_demo (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_demo (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 76, in test_demo
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+AttributeError: type object 'datetime.datetime' has no attribute 'datetime'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (errors=1)
+test_string (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_string (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 82, in test_string
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+AttributeError: type object 'datetime.datetime' has no attribute 'datetime'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (errors=1)
+test_string (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_string (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 82, in test_string
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+AttributeError: type object 'datetime.datetime' has no attribute 'datetime'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (errors=1)
+test_string (test.test_main.UnitTest) ... ERROR
+
+======================================================================
+ERROR: test_string (test.test_main.UnitTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\workspace_py\test\test_main.py", line 82, in test_string
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+AttributeError: type object 'datetime.datetime' has no attribute 'datetime'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (errors=1)

@@ -4,6 +4,8 @@
 # @time    : 2020/4/14 9:53
 # @file    : test_main.py
 import unittest
+from datetime import datetime
+
 from util.file import file_util
 from util.ssh.ssh_client import SSHClient
 import logging
@@ -17,6 +19,7 @@ logger = logging.getLogger()
 
 class UnitTest(unittest.TestCase):
     __sections_map = file_util.LoadConfig.get_config_parser(CFG_FILE)
+
     # __sections_map = {}
 
     def test_sftp(self):
@@ -30,7 +33,7 @@ class UnitTest(unittest.TestCase):
         # client = SSHClient(items.get('host'), items.get('user'), items.get('password'),
         #                    items.get('ftp_port'))
         # print(client.sftpClient.listdir('/'))
-        self.assertIsNotNone(sftp.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'),'cannot be null')
+        self.assertIsNotNone(sftp.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'), 'cannot be null')
         print(sftp.listdir_attr(remote_path))
         print('stat:' + sftp.stat(remote_path))
 
@@ -41,7 +44,7 @@ class UnitTest(unittest.TestCase):
         client = SSHClient(items.get('host'), items.get('user'), items.get('password'),
                            items.get('ftp_port'))
         print('listdir(/):' + client.sftpClient.listdir('/'))
-        self.assertIsNotNone(client.sftpClient.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'),'cannot be null')
+        self.assertIsNotNone(client.sftpClient.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'), 'cannot be null')
         # print(client.sftpClient.listdir_attr('/提交测试目录/销售系统/交易/V2020XX'))
         print('stat:' + str(client.sftpClient.stat(remote_path)))
         latest_dir = remote_path + '/' + client.sftp_find_latest_dir(remote_path)
@@ -72,12 +75,15 @@ class UnitTest(unittest.TestCase):
         test = 'abc'
         self.assertEqual('abc', test)
 
+
     def test_string(self):
-        str1='ABCDefg hijk'
+        str1 = 'ABCDefg hijk'
         self.assertTrue('abc' in str1.lower())
+        time = datetime.datetime.now().strftime('%H:%M:%S')
+        print('date -s "20201009 %s"' % time)
         print(''.lower())
         print(''.lower() in str1.lower())
-        print('str: %s; int: %d' %('abc', 110))
+        print('str: %s; int: %d' % ('abc', 110))
 
     def test_ssh_client(self):
         items = self.__sections_map['pkg_server']
