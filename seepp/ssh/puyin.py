@@ -76,7 +76,7 @@ def start(service_name):
         logger.debug("sql:" + sql)
     except Exception as e:
         conn.rollback()
-        logger.error("insert db error")
+        logger.error("insert db error" + e)
 
 
 def stop(service_name):
