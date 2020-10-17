@@ -56,7 +56,7 @@ def set_date():
         command = 'date -s "20201009 %s"' % time
     except IndexError:
         print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:30"')
-        #报错：logger.error('ERROR:please append datetime as param,e.g. set_date "20191111 12:00:00"')
+        #TODO:报错：logger.error('ERROR:please append datetime as param,e.g. set_date "20191111 12:00:00"')
     else:
         t_pool = []
         for service in service_list:
