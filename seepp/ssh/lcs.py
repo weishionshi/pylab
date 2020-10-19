@@ -153,5 +153,6 @@ def trigger_auto_task(task_name):
 
 if __name__ == '__main__':
     # pre_check()
-    trigger_auto_task('CHECKDATA')
+    # trigger_auto_task('CHECKDATA')
+    # trigger_auto_task('EXPORTREQUESTFILE')
     update_qrtz_triggers('2020-10-09 00:00:00')
