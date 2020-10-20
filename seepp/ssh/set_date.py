@@ -53,7 +53,7 @@ def set_date():
     try:
         #command = 'date -s "'+sys.argv[1]+'"'
         time = datetime.now().strftime('%H:%M:%S')
-        command = 'date -s "20201009 %s"' % time
+        command = 'date -s "20201010 %s"' % time
     except IndexError:
         print('ERROR:please append datetime as param,e.g. SetDate "20191111 12:00:30"')
         #TODO:报错：logger.error('ERROR:please append datetime as param,e.g. set_date "20191111 12:00:00"')
