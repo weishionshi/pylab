@@ -151,8 +151,18 @@ def trigger_auto_task(task_name):
         cursor.close()
 
 
+"""
+skip process manually
+"""
+
+
+def skip_process(prc_name):
+    pass
+
+
 if __name__ == '__main__':
-    # pre_check()
+    pre_check()
     # trigger_auto_task('CHECKDATA')
     # trigger_auto_task('EXPORTREQUESTFILE')
-    update_qrtz_triggers('2020-10-09 00:00:00')
+    trigger_auto_task('TRADEDAYINIT')
+    update_qrtz_triggers('2020-10-10 00:00:00')
