@@ -4,8 +4,10 @@
 # @time    (): 2020/10/16 10():40
 # @file    (): lcs.py
 import logging
+import time
 
 import pymysql
+import redis
 
 from util.db.pymysql_builder import PyMysqlFactory
 from util.file import file_util
@@ -24,21 +26,26 @@ sections_map = file_util.LoadConfig.get_config_parser("local_config_pu1.ini")
 service_list = sections_map['seepp']['services'].split('|')
 
 # init mysql connection
-db_host = sections_map['mariadb-172']['host']
-db_port = sections_map['mariadb-172']['port']
-db_user = sections_map['mariadb-172']['user']
-db_pwd = sections_map['mariadb-172']['password']
-db_name = sections_map['mariadb-172']['tcs_db_name']
+db_host = sections_map['mariadb-46']['host']
+db_port = sections_map['mariadb-46']['port']
+db_user = sections_map['mariadb-46']['user']
+db_pwd = sections_map['mariadb-46']['password']
+db_name = sections_map['mariadb-46']['tcs_db_name']
 builder1 = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, db_name)
 conn_tcs = builder1.get_connection()
 
-db_host = sections_map['mariadb-235']['host']
-db_port = sections_map['mariadb-172']['port']
-db_user = sections_map['mariadb-235']['user']
-db_pwd = sections_map['mariadb-235']['password']
-db_name = sections_map['mariadb-235']['lcs_db_name']
+db_host = sections_map['mariadb-46']['host']
+db_port = sections_map['mariadb-46']['port']
+db_user = sections_map['mariadb-46']['user']
+db_pwd = sections_map['mariadb-46']['password']
+db_name = sections_map['mariadb-46']['lcs_db_name']
 builder2 = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, db_name)
 conn_lcs = builder2.get_connection()
+
+# init redis pool
+pool = redis.ConnectionPool(host=sections_map['redis-158']['host'], port=sections_map['redis-158']['port'],
+                            password='redis@123', decode_responses=True)
+rds = redis.Redis(connection_pool=pool,charset='UTF-8',encoding='UTF-8')
 
 """
 scan pre conditions():
@@ -127,7 +134,51 @@ def get_lcs_sysdate():
     sql = "select VC_VALUE from LC_TSYSPARAMETER where vc_item = '%s' and vc_tenant_id='10000'" % ('SYSDATE')
     cursor = conn_lcs.cursor()
     try:
-        # TODO:这么写报错,cursor.execute(SYS_PARAMATER_SQL, [pymysql.escape_string('LC_TSYSPARAMETER'), 'SYSDATE'])
+        cursor.execute(sql)
+        logger.debug("sql:" + sql)
+    except Exception as e:
+        logger.error(e)
+    finally:
+        cursor.close()
+    return cursor.fetchone()[0]
+
+
+def set_tcs_sysdate(sys_date):
+    logger.info('original SYSDATE in db is ' + get_tcs_sysdate())
+    sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
+    cursor = conn_tcs.cursor()
+    try:
+        cursor.execute(sql,[sys_date, 'SYSDATE'])
+        logger.debug("sql:" + sql)
+        conn_tcs.commit()
+    except Exception as e:
+        conn_tcs.rollback()
+        logger.error(e)
+    finally:
+        cursor.close()
+
+    logger.info('SYSDATE in db after update is ' + get_tcs_sysdate())
+    # hdel sysdate
+    logger.info('original SYSDATE in redis is ' + rds.hget('sys_param_10000', 'SYSDATE'))
+    rds.hdel('sys_param_10000','SYSDATE')
+    time.sleep(6)
+    if rds.hget('sys_param_10000','SYSDATE') == None :
+        logger.info('SYSDATE in redis after HDEL is NULL')
+    else:
+        logger.info('SYSDATE in redis after HDEL is ' + rds.hget('sys_param_10000','SYSDATE'))
+
+
+
+"""
+set SYSDATE and refresh redis
+"""
+
+
+def set_lcs_sysdate(sys_date):
+    sql = "update LC_TSYSPARAMETER set vc_value= '%s' where vc_item = '%s' and vc_tenant_id='10000'" % (
+    sys_date, 'SYSDATE')
+    cursor = conn_lcs.cursor()
+    try:
         cursor.execute(sql)
         logger.debug("sql:" + sql)
     except Exception as e:
@@ -161,8 +212,11 @@ def skip_process(prc_name):
 
 
 if __name__ == '__main__':
-    pre_check()
+    # pre_check()
     # trigger_auto_task('CHECKDATA')
     # trigger_auto_task('EXPORTREQUESTFILE')
-    trigger_auto_task('TRADEDAYINIT')
-    update_qrtz_triggers('2020-10-10 00:00:00')
+    # trigger_auto_task('TRADEDAYINIT')
+    # update_qrtz_triggers('2020-10-10 00:00:00')
+    # print(rds.keys())
+    set_tcs_sysdate('20201218')
+
