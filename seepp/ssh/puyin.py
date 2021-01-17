@@ -2,7 +2,7 @@
 # from util import ReadConfig
 from util.file import file_util
 from util.ssh.ssh_client import SSHClient
-from util.db.pymysql_builder import PyMysqlFactory
+from util.db.conn_builder import PyMysqlFactory
 import logging
 from util import log_color
 import datetime
