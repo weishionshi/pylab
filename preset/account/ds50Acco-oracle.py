@@ -2,7 +2,7 @@
 # coding: utf-8
 
 """
-@File     : ds50Acco.py
+@File     : ds50Acco-oracle.py
 @copyright: HS
 @Author   : huyb20630
 @Date     : 2020/7/4 下午4:32

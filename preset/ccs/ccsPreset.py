@@ -1,6 +1,6 @@
 import traceback
 
-from util.db.pymysql_builder import PyMysqlFactory
+from util.db.conn_builder import PyMysqlFactory
 
 
 class CCSPreset:
