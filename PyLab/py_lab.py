@@ -7,7 +7,7 @@ from util.ReadConfig import get_config_parser
 
 from util.ssh import ssh_client
 from util.os import os_util
-from util.db.pymysql_builder import PyMysqlFactory
+from util.db.conn_builder import PyMysqlFactory
 from util.file import file_util
 import telnetlib
 import zipfile
