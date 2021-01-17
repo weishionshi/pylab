@@ -9,7 +9,7 @@ import time
 import pymysql
 import redis
 
-from util.db.pymysql_builder import PyMysqlFactory
+from util.db.conn_builder import PyMysqlFactory
 from util.file import file_util
 
 SYS_PARAMATER_SQL = "select VC_VALUE from %s where vc_item = %s and vc_tenant_id='10000';"
@@ -44,8 +44,8 @@ conn_lcs = builder2.get_connection()
 
 # init redis pool
 pool = redis.ConnectionPool(host=sections_map['redis-158']['host'], port=sections_map['redis-158']['port'],
-                            password='redis@123', decode_responses=True)
-rds = redis.Redis(connection_pool=pool,charset='UTF-8',encoding='UTF-8')
+                            password=sections_map['redis-158']['password'], decode_responses=True)
+rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
 """
 scan pre conditions():
@@ -148,7 +148,7 @@ def set_tcs_sysdate(sys_date):
     sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
     cursor = conn_tcs.cursor()
     try:
-        cursor.execute(sql,[sys_date, 'SYSDATE'])
+        cursor.execute(sql, [sys_date, 'SYSDATE'])
         logger.debug("sql:" + sql)
         conn_tcs.commit()
     except Exception as e:
@@ -160,13 +160,12 @@ def set_tcs_sysdate(sys_date):
     logger.info('SYSDATE in db after update is ' + get_tcs_sysdate())
     # hdel sysdate
     logger.info('original SYSDATE in redis is ' + rds.hget('sys_param_10000', 'SYSDATE'))
-    rds.hdel('sys_param_10000','SYSDATE')
+    rds.hdel('sys_param_10000', 'SYSDATE')
     time.sleep(6)
-    if rds.hget('sys_param_10000','SYSDATE') == None :
+    if rds.hget('sys_param_10000', 'SYSDATE') == None:
         logger.info('SYSDATE in redis after HDEL is NULL')
     else:
-        logger.info('SYSDATE in redis after HDEL is ' + rds.hget('sys_param_10000','SYSDATE'))
-
+        logger.info('SYSDATE in redis after HDEL is ' + rds.hget('sys_param_10000', 'SYSDATE'))
 
 
 """
@@ -175,17 +174,28 @@ set SYSDATE and refresh redis
 
 
 def set_lcs_sysdate(sys_date):
-    sql = "update LC_TSYSPARAMETER set vc_value= '%s' where vc_item = '%s' and vc_tenant_id='10000'" % (
-    sys_date, 'SYSDATE')
+    logger.info('original SYSDATE in db is ' + get_tcs_sysdate())
+    sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
     cursor = conn_lcs.cursor()
     try:
-        cursor.execute(sql)
+        cursor.execute(sql, [sys_date, 'SYSDATE'])
         logger.debug("sql:" + sql)
+        conn_lcs.commit()
     except Exception as e:
+        conn_lcs.rollback()
         logger.error(e)
     finally:
         cursor.close()
-    return cursor.fetchone()[0]
+
+    logger.info('SYSDATE in db after update is ' + get_lcs_sysdate())
+    # hdel sysdate
+    logger.info('original SYSDATE in redis is ' + rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
+    rds.delete('{"item":"SYSDATE","tenantId":"10000"}')
+    time.sleep(6)
+    if rds.get('{"item":"SYSDATE","tenantId":"10000"}') == None:
+        logger.info('SYSDATE in redis after DEL is NULL')
+    else:
+        logger.info('SYSDATE in redis after DEL is ' + rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
 
 
 def trigger_auto_task(task_name):
@@ -219,4 +229,4 @@ if __name__ == '__main__':
     # update_qrtz_triggers('2020-10-10 00:00:00')
     # print(rds.keys())
     set_tcs_sysdate('20201218')
-
+    set_lcs_sysdate('20201218')
