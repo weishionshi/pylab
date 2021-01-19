@@ -26,19 +26,19 @@ sections_map = file_util.LoadConfig.get_config_parser("local_config_pu1.ini")
 service_list = sections_map['seepp']['services'].split('|')
 
 # init mysql connection
-db_host = sections_map['mariadb-46']['host']
-db_port = sections_map['mariadb-46']['port']
-db_user = sections_map['mariadb-46']['user']
-db_pwd = sections_map['mariadb-46']['password']
-db_name = sections_map['mariadb-46']['tcs_db_name']
+db_host = sections_map['mariadb-172']['host']
+db_port = sections_map['mariadb-172']['port']
+db_user = sections_map['mariadb-172']['user']
+db_pwd = sections_map['mariadb-172']['password']
+db_name = sections_map['mariadb-172']['tcs_db_name']
 builder1 = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, db_name)
 conn_tcs = builder1.get_connection()
 
-db_host = sections_map['mariadb-46']['host']
-db_port = sections_map['mariadb-46']['port']
-db_user = sections_map['mariadb-46']['user']
-db_pwd = sections_map['mariadb-46']['password']
-db_name = sections_map['mariadb-46']['lcs_db_name']
+db_host = sections_map['mariadb-172']['host']
+db_port = sections_map['mariadb-172']['port']
+db_user = sections_map['mariadb-172']['user']
+db_pwd = sections_map['mariadb-172']['password']
+db_name = sections_map['mariadb-172']['lcs_db_name']
 builder2 = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, db_name)
 conn_lcs = builder2.get_connection()
 
@@ -158,8 +158,12 @@ def set_tcs_sysdate(sys_date):
         cursor.close()
 
     logger.info('SYSDATE in db after update is ' + get_tcs_sysdate())
+
+    if rds.hget('sys_param_10000', 'SYSDATE')== None:
+        logger.info('original SYSDATE in redis is NULL')
+    else:
+        logger.info('original SYSDATE in redis is ' + rds.hget('sys_param_10000', 'SYSDATE'))
     # hdel sysdate
-    logger.info('original SYSDATE in redis is ' + rds.hget('sys_param_10000', 'SYSDATE'))
     rds.hdel('sys_param_10000', 'SYSDATE')
     time.sleep(6)
     if rds.hget('sys_param_10000', 'SYSDATE') == None:
@@ -228,5 +232,5 @@ if __name__ == '__main__':
     # trigger_auto_task('TRADEDAYINIT')
     # update_qrtz_triggers('2020-10-10 00:00:00')
     # print(rds.keys())
-    set_tcs_sysdate('20201218')
-    set_lcs_sysdate('20201218')
+    set_tcs_sysdate('20201219')
+    set_lcs_sysdate('20201219')
