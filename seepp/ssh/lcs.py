@@ -162,14 +162,14 @@ def set_tcs_sysdate(sys_date):
     if rds.hget('sys_param_10000', 'SYSDATE')== None:
         logger.info('original SYSDATE in redis is NULL')
     else:
-        logger.info('original SYSDATE in redis is ' + rds.hget('sys_param_10000', 'SYSDATE'))
+        logger.info('[original] SYSDATE in redis is ' + rds.hget('sys_param_10000', 'SYSDATE'))
     # hdel sysdate
     rds.hdel('sys_param_10000', 'SYSDATE')
     time.sleep(6)
     if rds.hget('sys_param_10000', 'SYSDATE') == None:
-        logger.info('SYSDATE in redis after HDEL is NULL')
+        logger.info('SYSDATE in redis [after HDEL] is NULL')
     else:
-        logger.info('SYSDATE in redis after HDEL is ' + rds.hget('sys_param_10000', 'SYSDATE'))
+        logger.info('SYSDATE in redis [after HDEL] is ' + rds.hget('sys_param_10000', 'SYSDATE'))
 
 
 """
@@ -191,15 +191,20 @@ def set_lcs_sysdate(sys_date):
     finally:
         cursor.close()
 
-    logger.info('SYSDATE in db after update is ' + get_lcs_sysdate())
+    logger.info('SYSDATE in db [after update] is ' + get_lcs_sysdate())
+
+    if rds.get('{"item":"SYSDATE","tenantId":"10000"}') == None:
+        logger.info('[original ]SYSDATE in redis is NULL')
+    else:
+        logger.info('[original] SYSDATE in redis is ' + rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
+
     # hdel sysdate
-    logger.info('original SYSDATE in redis is ' + rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
     rds.delete('{"item":"SYSDATE","tenantId":"10000"}')
     time.sleep(6)
     if rds.get('{"item":"SYSDATE","tenantId":"10000"}') == None:
-        logger.info('SYSDATE in redis after DEL is NULL')
+        logger.info('SYSDATE in redis [after DEL] is NULL')
     else:
-        logger.info('SYSDATE in redis after DEL is ' + rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
+        logger.info('SYSDATE in redis [after DEL] is ' + rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
 
 
 def trigger_auto_task(task_name):
@@ -226,11 +231,11 @@ def skip_process(prc_name):
 
 
 if __name__ == '__main__':
-    # pre_check()
+    pre_check()
     # trigger_auto_task('CHECKDATA')
     # trigger_auto_task('EXPORTREQUESTFILE')
     # trigger_auto_task('TRADEDAYINIT')
-    # update_qrtz_triggers('2020-10-10 00:00:00')
+    update_qrtz_triggers('2020-10-10 00:00:00')
     # print(rds.keys())
-    set_tcs_sysdate('20201219')
-    set_lcs_sysdate('20201219')
+    # set_tcs_sysdate('20201219')
+    # set_lcs_sysdate('20201219')

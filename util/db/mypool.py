@@ -9,7 +9,7 @@ pip3 install pymysql 或者 pip install pymysql
 pip3 install DBUtils 或者 pip install DBUtils
 """
 import pymysql
-from DBUtils.PersistentDB import PersistentDB
+from DBUtils import PersistentDB
 from DBUtils.PooledDB import PooledDB
 from dbconfig import mysqldb_config
 
