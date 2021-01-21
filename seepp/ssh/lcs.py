@@ -221,6 +221,23 @@ def trigger_auto_task(task_name):
         cursor.close()
 
 
+def correct_msg_task_excetpion():
+    sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1',C_RECHECK_FLAG='1' where t.C_RESULT_STATE='0';"
+    sql2 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2';"
+    cursor = conn_lcs.cursor()
+    try:
+        rows = cursor.execute(sql1)
+        logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
+
+        rows = cursor.execute(sql2)
+        logger.info("[%d] rows affected by sql: [%s]" % (rows, sql2))
+        conn_lcs.commit()
+    except Exception as e:
+        conn_lcs.rollback()
+        logger.error(e)
+    finally:
+        cursor.close()
+
 """
 skip process manually
 """
@@ -232,10 +249,11 @@ def skip_process(prc_name):
 
 if __name__ == '__main__':
     pre_check()
+    correct_msg_task_excetpion()
     # trigger_auto_task('CHECKDATA')
     # trigger_auto_task('EXPORTREQUESTFILE')
     # trigger_auto_task('TRADEDAYINIT')
-    update_qrtz_triggers('2020-10-10 00:00:00')
+    update_qrtz_triggers('2022-10-10 00:00:00')
     # print(rds.keys())
-    # set_tcs_sysdate('20201219')
-    # set_lcs_sysdate('20201219')
+    # set_tcs_sysdate('20201220')
+    # set_lcs_sysdate('20201220')
