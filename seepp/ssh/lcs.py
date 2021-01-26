@@ -235,12 +235,18 @@ def correct_task_excetpion():
         cursor.close()
 
 
-def correct_msg_excetpion_but():
-    sql2 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' "
+def correct_msg_excetpion_but(msg_id=''):
+    sql1 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' "
+    sql2 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' and  VC_MESSAGE_ID<>%s "
     cursor = conn_lcs.cursor()
+
     try:
-        rows = cursor.execute(sql2)
-        logger.info("[%d] rows affected by sql: [%s]" % (rows, sql2))
+        if msg_id == '':
+            rows = cursor.execute(sql1)
+            logger.info("[%d] rows affected by sql1: [%s]" % (rows, sql1))
+        else:
+            rows = cursor.execute(sql2, [msg_id])
+            logger.info("[%d] rows affected by sql2: [%s]" % (rows, sql2))
         conn_lcs.commit()
     except Exception as e:
         conn_lcs.rollback()
@@ -261,10 +267,10 @@ if __name__ == '__main__':
     pre_check()
 
     correct_task_excetpion()
-    correct_msg_excetpion_but()
+    correct_msg_excetpion_but('')
     # trigger_auto_task('CHECKDATA')
     # trigger_auto_task('EXPORTREQUESTFILE')
     # trigger_auto_task('TRADEDAYINIT')
-    update_qrtz_triggers('2022-10-10 00:00:00')
-    set_tcs_sysdate('20201222')
-    set_lcs_sysdate('20201222')
+    # update_qrtz_triggers('2022-10-10 00:00:00')
+    # set_tcs_sysdate('20201222')
+    # set_lcs_sysdate('20201222')
