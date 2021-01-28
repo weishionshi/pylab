@@ -2,23 +2,25 @@
 
 """
 数据库连接池操作工具类
-PooledDB这个用于多线程的,如果你的程序频繁地启动和关闭纯种,最好使用这个
-PersistentDB这个用于单线程,如果你的程序只是在单个线程上进行频繁的数据库连接,最好使这个
+PooledDB用于多线程的,如果你的程序频繁地启动和关闭,最好使用这个
+PersistentDB用于单线程,如果你的程序只是在单个线程上进行频繁的数据库连接,最好使用这个
 使用前：安装
 pip3 install pymysql 或者 pip install pymysql
 pip3 install DBUtils 或者 pip install DBUtils
 """
 import pymysql
-from DBUtils import PersistentDB
-from DBUtils.PooledDB import PooledDB
-from dbconfig import mysqldb_config
+import DBUtils.PersistentDB
+import DBUtils.PooledDB
+import DBUtils.dbconfig.mysqldb_config
+
+
 
 # 数据库连接配置信息
-config = mysqldb_config
+config = DBUtils.dbconfig.mysqldb_config
 
 def get_db_pool(is_mult_thread):
     if is_mult_thread:
-        poolDB = PooledDB(
+        poolDB = DBUtils.PooledDB(
             # 指定数据库连接驱动
             creator=pymysql,
             # 连接池允许的最大连接数,0和None表示没有限制
@@ -39,7 +41,7 @@ def get_db_pool(is_mult_thread):
             **config
         )
     else:
-        poolDB = PersistentDB(
+        poolDB = DBUtils.PersistentDB(
             # 指定数据库连接驱动
             creator=pymysql,
             # 一个连接最大复用次数,0或者None表示没有限制,默认为0

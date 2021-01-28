@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : shiwx27477
 # @time    : 2020/10/21 11:48
-# @file    : lcs.py
+# @file    : puyi-lcs.py
 from util.file import file_util
 from util.db.conn_builder import PyMysqlFactory, PyOracleFactory
 

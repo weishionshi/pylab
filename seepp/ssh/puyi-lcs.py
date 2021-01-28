@@ -2,7 +2,7 @@
 # -*- coding(): utf-8 -*-
 # @author  (): shiwx27477
 # @time    (): 2020/10/16 10():40
-# @file    (): lcs.py
+# @file    (): puyi-lcs.py
 import logging
 import time
 
