@@ -20,7 +20,8 @@ class LoggerFactory:
     def __init__(self, logger_name='root', cfg_file=None):
 
         if cfg_file is not None:
-            path = cfg_file
+            path = os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + '/config/' + cfg_file
         else:
             path = os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + '/config/' + 'logging.yaml'
