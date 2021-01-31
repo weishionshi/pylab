@@ -1,5 +1,8 @@
-# -*- encoding=utf8 -*-
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @author  : shiwx
+# @time    : 2020/10/19 06:32
+# @file    : mypool.py
 """
 数据库连接池操作工具类
 PooledDB用于多线程的,如果你的程序频繁地启动和关闭,最好使用这个
