@@ -36,6 +36,7 @@ class PyOracleFactory:
     def get_connection(self):
         return self.conn
 
+# TODO:connection pool
 
 if __name__ == '__main__':
     # 连接database
