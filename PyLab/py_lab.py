@@ -1,5 +1,5 @@
 # _*_coding:utf-8_*_
-from django.conf import settings
+# from django.conf import settings
 from util.logging.logger_manager import LoggerFactory
 import time
 import logging
@@ -153,10 +153,13 @@ def test_telnet():
 
 
 def test_logger():
-    logger = LoggerFactory('seepp').get_logger()
+    # logger = LoggerFactory('seepp').get_logger()
+    logger = LoggerFactory(__name__).get_logger()
     logger.debug("debug log")
     logger.info("info log")
-    logger.error("error log")
+    logger.error("error log", exc_info=True) # 等价于logger.exception(msg, _args)
+    print(__name__)
+    print(__file__)
 
 
 def test_os_path():
@@ -172,7 +175,7 @@ def test_regex():
 
 
 if __name__ == '__main__':
-    test_sshclient()
+    # test_sshclient()
     # test_sftp()
     # test_ftplib()
     # print("BASE_DIR:" + settings.BASE_DIR)
@@ -186,7 +189,7 @@ if __name__ == '__main__':
     # test_datetime()
     # test_list()
     # test_telnet()
-    # test_logger()
+    test_logger()
     # test_os_path()
     # test_os()
     # test_regex()
