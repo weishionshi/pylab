@@ -6,15 +6,16 @@
 import unittest
 from datetime import datetime
 
+from seepp.service.lcs import Liquidate
 from util.file import file_util
+from util.logging.logger_manager import LoggerFactory
 from util.ssh.ssh_client import SSHClient
 import logging
 import paramiko
 
 CFG_FILE = 'local_config_pu1.ini'
 # init logger
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
+logger = LoggerFactory(__name__).get_logger()
 
 
 class UnitTest(unittest.TestCase):
@@ -108,6 +109,13 @@ class UnitTest(unittest.TestCase):
     @unittest.skip("skip this case.")
     def test_osutil(self):
         pass
+
+    def test_get_tcs_sysdate(self):
+        liq = Liquidate('local_config_pu1.ini')
+        liq.init_db_conn('mariadb-173')
+        sysdate = liq.get_tcs_sysdate()
+        self.assertIsNotNone(sysdate)
+        logger.info(sysdate)
 
 
 # 可以直接在用例里执行，也可以把用例组织为TestSuite执行
