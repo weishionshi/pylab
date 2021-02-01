@@ -7,7 +7,7 @@ logger = LoggerFactory(__name__).get_logger()
 
 class LoadConfig:
     @staticmethod
-    def get_config_parser(file_name):
+    def get_config_parser(file_name, encoding='utf-8'):
         # 获取当前文件所在目录的上两级目录
         root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         sections_map = {}
@@ -15,7 +15,7 @@ class LoadConfig:
         logger.info("config file: " + root_dir + "/config/" + file_name)
         cf = configparser.ConfigParser()
         # 拼接得到local_config.ini文件的路径，直接使用
-        cf.read(root_dir + "/config/" + file_name)
+        cf.read(root_dir + "/config/" + file_name, encoding=encoding)
         sections = cf.sections()
 
         for i in range(len(sections)):

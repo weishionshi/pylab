@@ -21,7 +21,7 @@ class Liquidate:
         self.config_path = config_path
 
         # read config
-        self.__sections_map = file_util.LoadConfig.get_config_parser(config_path)
+        self.__sections_map = file_util.LoadConfig.get_config_parser(config_path, encoding='gbk')
 
         # init db connections
         db_section = self.__sections_map.get('seepp').get('db')
