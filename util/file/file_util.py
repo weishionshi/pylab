@@ -1,9 +1,8 @@
 import configparser
 import os
-import logging
+from util.logging.logger_manager import LoggerFactory
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
+logger = LoggerFactory(__name__).get_logger()
 
 
 class LoadConfig:

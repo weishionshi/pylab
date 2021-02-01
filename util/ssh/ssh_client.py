@@ -1,8 +1,11 @@
 import paramiko
+import threading
 import os
 import stat
 from util.os.os_util import get_all_files_in_local_dir
+from util.logging.logger_manager import LoggerFactory
 
+logger = LoggerFactory(__name__).get_logger()
 
 class SSHClient:
 
@@ -45,21 +48,21 @@ class SSHClient:
         stdin, stdout, stderr = self.sshClient.exec_command(cmd)
         channel = stdout.channel
         status = channel.recv_exit_status()
-        print("-" * 60)
-        print("host: [%s],   command: [%s]\n" % (self.host, cmd))
-        print(stdout.read().decode())
-        print(stderr.read().decode())
-        print("exit status: %d" % status)
-        print("-" * 60)
+        logger.info("-" * 60)
+        logger.info("host: [%s],   command: [%s]\n" % (self.host, cmd))
+        logger.info(stdout.read().decode())
+        logger.info(stderr.read().decode())
+        logger.info("exit status: %d" % status)
+        logger.info("-" * 60)
 
     # 没有返回值，执行后台命令时不会阻塞
     def exec_cmd_nb(self, cmd):
         transport = self.sshClient.get_transport()
         channel = transport.open_session()
         channel.exec_command(cmd)
-        print("-" * 60)
-        print("host: [%s],  transport command: [%s]\n" % (self.host, cmd))
-        print("-" * 60)
+        logger.info("-" * 60)
+        logger.info("host: [%s],  transport command: [%s]\n" % (self.host, cmd))
+        logger.info("-" * 60)
 
     # get单个文件
     # 注意remotefile, localfile一定是文件，不能是目录,localfile指定本地将要保存的文件名，可以与remotefile的名字不一样
@@ -80,7 +83,7 @@ class SSHClient:
 
         # 如果目录不存在，那么创建
         if not self.check_if_dir_exist(remote_dir=remote_dir):
-            print('远端 [%s] 目录不存在,程序先创建' % remote_dir)
+            logger.info('远端 [%s] 目录不存在,程序先创建' % remote_dir)
             self.sshClient.exec_command('mkdir -p ' + remote_dir)
 
         # 获取本地指定目录及其子目录下的所有文件
@@ -89,9 +92,9 @@ class SSHClient:
         for file in all_files:
             filename = os.path.split(file)[-1]
             remote_filename = remote_dir + '/' + filename
-            print(u'Put文件[%s]，传输中...' % filename)
+            logger.info(u'Put文件[%s]，传输中...' % filename)
             self.sftpClient.put(file, remote_filename)
-            print('put success:from local [' + file + '] to remote [' + remote_filename + ']')
+            logger.info('put success:from local [' + file + '] to remote [' + remote_filename + ']')
 
     def check_if_dir_exist(self, remote_dir):
         stdin, stdout, stderr = self.sshClient.exec_command('ls ' + remote_dir)
@@ -106,7 +109,7 @@ class SSHClient:
         stdin, stdout, stderr = self.sshClient.exec_command(cmd)
         stdout_str = stdout.read().decode()
         stderr_str = stderr.read().decode()
-        self.___print_exec_result(cmd, stdout_str, stderr_str)
+        self.__print_exec_result(cmd, stdout_str, stderr_str)
 
         if stdout.channel.recv_exit_status() == 0 and stdout_str != '':
             return stdout_str.split(' ')[-1].replace('\n', '').replace('\r', '')
@@ -120,7 +123,7 @@ class SSHClient:
         stdin, stdout, stderr = self.sshClient.exec_command(cmd)
         stdout_str = stdout.read().decode()
         stderr_str = stderr.read().decode()
-        self.___print_exec_result(cmd, stdout_str, stderr_str)
+        self.__print_exec_result(cmd, stdout_str, stderr_str)
 
         if stdout.channel.recv_exit_status() == 0 and stdout_str != '':
             return stdout_str.split(' ')[-1].replace('\n', '').replace('\r', '')
@@ -172,9 +175,42 @@ class SSHClient:
 
     # print exec result
     @staticmethod
-    def ___print_exec_result(self, cmd, stdout, stderr):
-        print("-" * 60)
-        print("host: [%s],   command: [%s]\n" % (self.host, cmd))
-        print('stdout:' + stdout)
-        print('stderr:' + stderr)
-        print("-" * 60)
+    def __print_exec_result(self, cmd, stdout, stderr):
+        logger.info("-" * 60)
+        logger.info("host: [%s],   command: [%s]\n" % (self.host, cmd))
+        logger.info('stdout:' + stdout)
+        logger.info('stderr:' + stderr)
+        logger.info("-" * 60)
+
+
+class ParamikoThreading(threading.Thread):
+    def __init__(self, command, host, username, password, port=22):
+        self.command = command
+        self.host = host
+        self.username = username
+        self.password = password
+        self.port = port
+
+        super(ParamikoThreading, self).__init__()
+
+    def run(self):
+        ssh = paramiko.SSHClient()
+        # 创建一个ssh的白名单
+        know_host = paramiko.AutoAddPolicy()
+        # 加载创建的白名单
+        ssh.set_missing_host_key_policy(know_host)
+
+        # 连接服务器
+        ssh.connect(
+            hostname=self.host,
+            port=self.port,
+            username=self.username,
+            password=self.password,
+        )
+
+        stdin, stdout, stderr = ssh.exec_command(self.command)
+        logger.info("*" * 60)
+        logger.info("ip:%s,   command:%s,\n" % (self.host, self.command))
+        logger.info(stdout.read().decode())
+        logger.info("*" * 60)
+        ssh.close()

@@ -1,14 +1,12 @@
-from util.ReadConfig import get_config_parser
-from util.ssh.SSHThread import ParamikoThreading
-import logging
 import os
 from util.ssh.ssh_client import SSHClient
 from util.os.os_util import get_all_files_in_local_dir
+from util.file import file_util
+from util.logging.logger_manager import LoggerFactory
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-sections_map = get_config_parser("local_config_puyin.ini")
-
+logger = LoggerFactory(__name__).get_logger()
+# read config
+sections_map = file_util.LoadConfig.get_config_parser("local_config_puyin.ini")
 
 # ------获取本地指定目录及其子目录下的所有文件------
 def __get_all_files_in_local_dir(local_dir):

@@ -3,7 +3,6 @@
 from util.logging.logger_manager import LoggerFactory
 import time
 import logging
-from util.ReadConfig import get_config_parser
 
 from util.ssh import ssh_client
 from util.os import os_util
@@ -41,16 +40,6 @@ def test_ftplib():
     print(ftp.getwelcome())  # 打印欢迎信息
 
 
-def test_sshclient():
-    sections_map = file_util.LoadConfig.get_config_parser("local_config_puyin.ini")
-    items = sections_map['code_server_182']
-    client = ssh_client.SSHClient(items.get('host'),items.get('user'),items.get('password'),items.get('ftp_port'))
-    latest_dir = client.find_latest_dir('/提交测试目录/销售系统/交易/V2020XX')
-    print('latest dir:' + latest_dir)
-
-def test_read_config():
-    sections_map = get_config_parser("local_config_puyin.ini")
-    print(sections_map)
 
 
 '''  

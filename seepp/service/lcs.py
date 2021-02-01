@@ -6,6 +6,7 @@
 from util.logging.logger_manager import LoggerFactory
 from util.file import file_util
 from util.db.conn_builder import PyMysqlFactory
+from util.ssh.ssh_client import ParamikoThreading
 import time
 import redis
 
@@ -14,29 +15,31 @@ class Liquidate:
     # init logger
     __logger = LoggerFactory(__name__).get_logger()
 
-    # _sections_map=None
+    # __sections_map=None
 
     def __init__(self, config_path):
         self.config_path = config_path
 
         # read config
-        self._sections_map = file_util.LoadConfig.get_config_parser(config_path)
+        self.__sections_map = file_util.LoadConfig.get_config_parser(config_path)
 
         # init db connections
-        # self.init_db_conn()
-        self.conn_tcs = None
-        self.conn_lcs = None
-        self.rds = None
+        db_section = self.__sections_map.get('seepp').get('db')
+        self.__init_db_conn(db_section)
 
-    def init_db_conn(self, section):
+        # init redis connections
+        rds_section = self.__sections_map.get('seepp').get('redis')
+        self.__init_redis_conn(rds_section)
+
+    def __init_db_conn(self, section):
         # init mysql connection
-        dbms = self._sections_map.get(section)['dbms']
-        db_host = self._sections_map.get(section)['host']
-        db_port = self._sections_map.get(section)['port']
-        db_user = self._sections_map.get(section)['user']
-        db_pwd = self._sections_map.get(section)['password']
-        tcs_db_name = self._sections_map.get(section)['tcs_db_name']
-        lcs_db_name = self._sections_map.get(section)['lcs_db_name']
+        dbms = self.__sections_map.get(section)['dbms']
+        db_host = self.__sections_map.get(section)['host']
+        db_port = self.__sections_map.get(section)['db_port']
+        db_user = self.__sections_map.get(section)['db_user']
+        db_pwd = self.__sections_map.get(section)['db_password']
+        tcs_db_name = self.__sections_map.get(section)['tcs_db_name']
+        lcs_db_name = self.__sections_map.get(section)['lcs_db_name']
         if dbms.lower() == 'mysql' or dbms.lower() == 'mariadb':
             self.conn_tcs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, tcs_db_name).get_connection()
             self.conn_lcs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, lcs_db_name).get_connection()
@@ -44,10 +47,10 @@ class Liquidate:
             pass
             # TODO:init oracle connection
 
-    def init_redis_conn(self, section):
-        pool = redis.ConnectionPool(host=self._sections_map.get(section)['host'],
-                                    port=self._sections_map.get(section)['port'],
-                                    password=self._sections_map.get(section)['password'], decode_responses=True)
+    def __init_redis_conn(self, section):
+        pool = redis.ConnectionPool(host=self.__sections_map.get(section)['host'],
+                                    port=self.__sections_map.get(section)['rds_port'],
+                                    password=self.__sections_map.get(section)['rds_password'], decode_responses=True)
         self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
     def get_tcs_sysdate(self):
@@ -67,7 +70,7 @@ class Liquidate:
     def get_lcs_sysdate(self):
         sql = "select VC_VALUE from LC_TSYSPARAMETER where vc_item = '%s' and vc_tenant_id='10000'" % ('SYSDATE')
         cursor = self.conn_lcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
+        self.conn_lcs.ping(reconnect=True)
         try:
             cursor.execute(sql)
             self.__logger.debug("sql:" + sql)
@@ -90,52 +93,6 @@ class Liquidate:
 
         self.__logger("Database version : %s " % data)
 
-    def sync_machine_time(self):
-        pass
-
-    def get_all_machines_datetime(self):
-        pass
-
-    """
-    update qrtz_triggers.next_fire_time
-    """
-
-    def update_qrtz_triggers(self, datetime):
-        # exec update sql  date_add(now(),interval 5 second )
-        sql = """update qrtz_triggers t
-        set t.NEXT_FIRE_TIME=timestampdiff(second ,'1970-01-01 08:00:00',%s)*1000 
-        where 1=1  and t.SCHED_NAME='liq';
-        """
-        cursor = self.conn_tcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
-        try:
-            rows = cursor.execute(sql, [datetime])
-            self.conn_tcs.commit()
-            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
-        except Exception as e:
-            self.conn_tcs.rollback()
-            self.__logger.error(e, exec_info=True)
-        finally:
-            cursor.close()
-
-        cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
-        try:
-            rows = cursor.execute(sql, [datetime])
-            self.conn_lcs.commit()
-            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
-        except Exception as e:
-            self.conn_lcs.rollback()
-            self.__logger.error(e, exec_info=True)
-        finally:
-            cursor.close()
-
-    """
-    backup database
-    """
-
-    def backup_db(self):
-        pass
 
     """
     set SYSDATE and refresh redis
@@ -200,6 +157,78 @@ class Liquidate:
         else:
             self.__logger.info('SYSDATE in redis [after HDEL] is ' + self.rds.hget('sys_param_10000', 'SYSDATE'))
 
+
+    def sync_machine_time(self):
+        pass
+
+    def get_all_machines_datetime(self):
+        command = 'date +"%Y-%m-%d %H:%M:%S" '
+        all_list = self.__sections_map.get('seepp').get('services').split('|')
+        all_list.append(self.__sections_map.get('seepp').get('db'))
+        self.__logger.debug('all machines:' + str(all_list))
+
+        t_pool = []
+        for service in all_list:
+            items = self.__sections_map[service]
+            t = ParamikoThreading(
+                host=items.get("host", "localhost"),
+                username=items.get("user", "root"),
+                password=items.get("password", "123456"),
+                command=command
+            )
+            t_pool.append(t)
+        for t in t_pool:
+            t.start()
+        for t in t_pool:
+            t.join()
+
+
+    def pre_check(self):
+        print('tcs SYSDATE:' + self.get_tcs_sysdate())
+        print('lcs SYSDATE:' + self.get_lcs_sysdate())
+        self.get_all_machines_datetime()
+
+
+    """
+    update qrtz_triggers.next_fire_time
+    """
+
+    def update_qrtz_triggers(self, datetime):
+        # exec update sql  date_add(now(),interval 5 second )
+        sql = """update qrtz_triggers t
+        set t.NEXT_FIRE_TIME=timestampdiff(second ,'1970-01-01 08:00:00',%s)*1000 
+        where 1=1  and t.SCHED_NAME='liq';
+        """
+        cursor = self.conn_tcs.cursor()
+        self.conn_tcs.ping(reconnect=True)
+        try:
+            rows = cursor.execute(sql, [datetime])
+            self.conn_tcs.commit()
+            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+        except Exception as e:
+            self.conn_tcs.rollback()
+            self.__logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
+        cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
+        try:
+            rows = cursor.execute(sql, [datetime])
+            self.conn_lcs.commit()
+            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+        except Exception as e:
+            self.conn_lcs.rollback()
+            self.__logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
+    """
+    backup database
+    """
+
+    def backup_db(self):
+        pass
 
 
     def trigger_auto_task(self, task_name):

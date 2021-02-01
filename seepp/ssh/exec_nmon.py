@@ -1,10 +1,10 @@
-from util.ssh.SSHThread import ParamikoThreading
+from util.ssh.ssh_client import ParamikoThreading
 
 if __name__ == '__main__':
     # from settings import hosts  # 调用配置文件配置文件为settings.py
-    hosts = [dict(host="192.168.1.108", username="root", password="caifu@123"),
-             dict(host="192.168.1.108", username="root", password="caifu@123"),
-             dict(host="192.168.1.108", username="root", password="bbqqll")]
+    hosts = [dict(host="192.168.1.108", username="root", password="123456"),
+             dict(host="192.168.1.108", username="root", password="123456"),
+             dict(host="192.168.1.108", username="root", password="123456")]
 
     command = "date -s \"20191107 17:25:00\""
 
