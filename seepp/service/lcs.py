@@ -95,13 +95,14 @@ class Liquidate:
 
 
     """
-    set SYSDATE and refresh redis
+    set SYSDATE in DB and refresh redis
     """
 
     def set_lcs_sysdate(self, sys_date):
         self.__logger.info('original SYSDATE in db is ' + self.get_tcs_sysdate())
         sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             self.__logger.debug("sql:" + sql)
@@ -133,6 +134,7 @@ class Liquidate:
         self.__logger.info('[original] SYSDATE in db is ' + self.get_tcs_sysdate())
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
+        self.conn_tcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             self.__logger.debug("sql:" + sql)
@@ -145,6 +147,7 @@ class Liquidate:
 
         self.__logger.info('SYSDATE in db [after] update is ' + self.get_tcs_sysdate())
 
+        # update redis
         if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
             self.__logger.info('original SYSDATE in redis is NULL')
         else:
