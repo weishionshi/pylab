@@ -13,7 +13,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master.ini')
-    SYSDATE = '20210315'
+    SYSDATE = '20210317'
 
     @classmethod
     def setUpClass(cls):
@@ -40,3 +40,19 @@ class TestLiquidate(TestCase):
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
         self.liq.set_tcs_sysdate(self.SYSDATE)
+
+    def test_trigger_auto_task(self):
+        # 清除异常任务
+        self.liq.correct_task_excetpion()
+
+        # 交易导出申请
+        self.liq.trigger_auto_task('EXPORTREQUESTFILE')
+
+    def test_trigger_message_task(self):
+        # 清除异常任务
+        self.liq.correct_task_excetpion()
+
+        # 清除异常消息,除了本次的message_id
+        self.liq.correct_msg_excetpion_but('27984bb7-9f0f-4ade-9d70-f025189f9d43')
+
+
