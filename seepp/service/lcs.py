@@ -187,6 +187,8 @@ class Liquidate:
         print('tcs SYSDATE:' + self.get_tcs_sysdate())
         print('lcs SYSDATE:' + self.get_lcs_sysdate())
         self.get_all_machines_datetime()
+        # TODO:应用健康检查
+        # TODO:数据库健康检查
 
     """
     update qrtz_triggers.next_fire_time
@@ -228,6 +230,13 @@ class Liquidate:
 
     def backup_db(self):
         pass
+
+    def start_db(self):  # TODO
+        pass
+
+    def shutdown_db(self):  # TODO
+        pass
+
 
     def trigger_auto_task(self, task_name):
         sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s;"
