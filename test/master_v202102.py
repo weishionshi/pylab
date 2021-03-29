@@ -13,7 +13,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master.ini')
-    SYSDATE = '20210317'
+    SYSDATE = '20210318'
 
     @classmethod
     def setUpClass(cls):
