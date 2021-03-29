@@ -93,15 +93,15 @@ class Liquidate:
 
         self.__logger("Database version : %s " % data)
 
-
     """
-    set SYSDATE and refresh redis
+    set SYSDATE in DB and refresh redis
     """
 
     def set_lcs_sysdate(self, sys_date):
-        self.__logger.info('original SYSDATE in db is ' + self.get_tcs_sysdate())
+        self.__logger.info('original SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             self.__logger.debug("sql:" + sql)
@@ -112,13 +112,13 @@ class Liquidate:
         finally:
             cursor.close()
 
-        self.__logger.info('SYSDATE in db [after update] is ' + self.get_lcs_sysdate())
+        self.__logger.info('SYSDATE in db [after update] is [%s]' % self.get_lcs_sysdate())
 
         if self.rds.get('{"item":"SYSDATE","tenantId":"10000"}') is None:
-            self.__logger.info('[original ]SYSDATE in redis is NULL')
+            self.__logger.info('[original ]SYSDATE in redis is [NULL]')
         else:
             self.__logger.info(
-                '[original] SYSDATE in redis is ' + self.rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
+                '[original] SYSDATE in redis is [%s]' % self.rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
 
         # hdel sysdate
         self.rds.delete('{"item":"SYSDATE","tenantId":"10000"}')
@@ -127,12 +127,13 @@ class Liquidate:
             self.__logger.info('SYSDATE in redis [after DEL] is NULL')
         else:
             self.__logger.info(
-                'SYSDATE in redis [after DEL] is ' + self.rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
+                'SYSDATE in redis [after DEL] is [%s]' % self.rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
 
     def set_tcs_sysdate(self, sys_date):
-        self.__logger.info('[original] SYSDATE in db is ' + self.get_tcs_sysdate())
+        self.__logger.info('[original] SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
+        self.conn_tcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             self.__logger.debug("sql:" + sql)
@@ -143,20 +144,20 @@ class Liquidate:
         finally:
             cursor.close()
 
-        self.__logger.info('SYSDATE in db [after] update is ' + self.get_tcs_sysdate())
+        self.__logger.info('SYSDATE in db [after] update is [%s]' % self.get_tcs_sysdate())
 
+        # update redis
         if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
-            self.__logger.info('original SYSDATE in redis is NULL')
+            self.__logger.info('[original] SYSDATE in redis is [NULL]')
         else:
-            self.__logger.info('[original] SYSDATE in redis is ' + self.rds.hget('sys_param_10000', 'SYSDATE'))
+            self.__logger.info('[original] SYSDATE in redis is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
         # hdel sysdate
         self.rds.hdel('sys_param_10000', 'SYSDATE')
         time.sleep(6)
         if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
             self.__logger.info('SYSDATE in redis [after HDEL] is NULL')
         else:
-            self.__logger.info('SYSDATE in redis [after HDEL] is ' + self.rds.hget('sys_param_10000', 'SYSDATE'))
-
+            self.__logger.info('SYSDATE in redis [after HDEL] is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
 
     def sync_machine_time(self):
         pass
@@ -182,12 +183,10 @@ class Liquidate:
         for t in t_pool:
             t.join()
 
-
     def pre_check(self):
         print('tcs SYSDATE:' + self.get_tcs_sysdate())
         print('lcs SYSDATE:' + self.get_lcs_sysdate())
         self.get_all_machines_datetime()
-
 
     """
     update qrtz_triggers.next_fire_time
@@ -230,10 +229,10 @@ class Liquidate:
     def backup_db(self):
         pass
 
-
     def trigger_auto_task(self, task_name):
         sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s;"
         cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql, [task_name])
             self.conn_lcs.commit()
@@ -247,6 +246,7 @@ class Liquidate:
     def correct_task_excetpion(self):
         sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1',C_RECHECK_FLAG='1' where t.C_RESULT_STATE='0';"
         cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql1)
             self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
@@ -261,6 +261,7 @@ class Liquidate:
         sql1 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' "
         sql2 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' and  VC_MESSAGE_ID<>%s "
         cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
 
         try:
             if msg_id == '':
