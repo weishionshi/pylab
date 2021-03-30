@@ -35,7 +35,10 @@ class TestLiquidate(TestCase):
         print('tearDownClass')
 
     def test_pre_check(self):
-        self.liq.pre_check()
+        self.liq.pre_check(sysdate=self.SYSDATE)
+
+    def test_refresh_service(self):
+        self.liq.refresh_service()
 
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
@@ -45,6 +48,9 @@ class TestLiquidate(TestCase):
         # 清除异常任务
         self.liq.correct_task_excetpion()
 
+        # 清除异常消息,除了本次的message_id
+        self.liq.correct_msg_excetpion_but()
+
         # 交易导出申请
         self.liq.trigger_auto_task('EXPORTREQUESTFILE')
 
@@ -53,6 +59,6 @@ class TestLiquidate(TestCase):
         self.liq.correct_task_excetpion()
 
         # 清除异常消息,除了本次的message_id
-        self.liq.correct_msg_excetpion_but('27984bb7-9f0f-4ade-9d70-f025189f9d43')
+        self.liq.correct_msg_excetpion_but()
 
 
