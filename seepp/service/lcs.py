@@ -3,6 +3,9 @@
 # @author  : shiwx
 # @time    : 2021/1/28 19:21
 # @file    : lcs.py
+import json
+import urllib
+from urllib import request
 from util.logging.logger_manager import LoggerFactory
 from util.file import file_util
 from util.db.conn_builder import PyMysqlFactory
@@ -183,18 +186,77 @@ class Liquidate:
         for t in t_pool:
             t.join()
 
-    def pre_check(self):
+    def pre_check(self, sysdate):
         print('tcs SYSDATE:' + self.get_tcs_sysdate())
         print('lcs SYSDATE:' + self.get_lcs_sysdate())
-        self.get_all_machines_datetime()
-        # TODO:应用健康检查
-        # TODO:数据库健康检查
+        assert self.get_tcs_sysdate() == sysdate
+        assert self.get_lcs_sysdate() == sysdate
 
-    """
-    update qrtz_triggers.next_fire_time
-    """
+        self.get_all_machines_datetime()
+        # check app health
+        self.check_service_health()
+
+        # TODO:硬件健康检查(磁盘)
+
+    def check_service_health(self):
+        """
+        后台应用健康检查
+        """
+        srv_list = self.__sections_map.get('seepp').get('services').split('|')
+        for service in srv_list:
+            items = self.__sections_map[service]
+            url = 'http://' + items.get("host") + ':' + items.get("port") + '/health'
+            self.__logger.debug('url:' + url)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'}
+            # 重构useragent
+            req = urllib.request.Request(url=url, headers=headers)
+            # 发送请求获取响应对象(urlopen)
+            res = urllib.request.urlopen(req)
+            # 获取响应内容,并转换成python dict
+            response = json.loads(res.read().decode())
+            self.__logger.debug(response)
+            self.__logger.info('[%s] is [%s]' % (url, response['status']))
+            assert response['status'] == 'UP'
+
+    def check_db_ping(self):
+        """
+        数据库健康检查
+        """
+        pass
+
+    def check_hardware_health(self):
+        """
+        硬件资源健康检查
+        """
+        pass
+
+    def refresh_service(self):
+        """
+        后台应用健康检查
+        """
+        srv_list = self.__sections_map.get('seepp').get('services').split('|')
+        for service in srv_list:
+            items = self.__sections_map[service]
+            url = 'http://' + items.get("host") + ':' + items.get("port") + '/refresh'
+            self.__logger.debug('url:' + url)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'}
+            # 重构useragent
+            req = urllib.request.Request(url=url, headers=headers)
+            # 发送请求获取响应对象(urlopen)
+            res = urllib.request.urlopen(req)
+            # 获取响应内容,并转换成python dict
+            response = res.read().decode()
+            self.__logger.debug(response)
+            self.__logger.info('refresh response of [%s] is [%s]' % (url, response))
+            assert 'success' in response or 'ok' in response
+
 
     def update_qrtz_triggers(self, datetime):
+        """
+        update qrtz_triggers.next_fire_time
+        """
         # exec update sql  date_add(now(),interval 5 second )
         sql = """update qrtz_triggers t
         set t.NEXT_FIRE_TIME=timestampdiff(second ,'1970-01-01 08:00:00',%s)*1000 
@@ -236,7 +298,6 @@ class Liquidate:
 
     def shutdown_db(self):  # TODO
         pass
-
 
     def trigger_auto_task(self, task_name):
         sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s;"
