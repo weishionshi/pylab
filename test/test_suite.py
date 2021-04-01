@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(UnitTest))
 
     # 自定义case
-    tests = [UnitTest("test_string")]
+    tests = [UnitTest("test_get_tcs_sysdate")]
     suite.addTests(tests)
 
     # txt版报告

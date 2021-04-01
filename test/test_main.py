@@ -13,7 +13,7 @@ from util.ssh.ssh_client import SSHClient
 import logging
 import paramiko
 
-CFG_FILE = 'local_config_pu1.ini'
+CFG_FILE = 'local_config_master.ini'
 # init logger
 logger = LoggerFactory(__name__).get_logger()
 
@@ -111,8 +111,7 @@ class UnitTest(unittest.TestCase):
         pass
 
     def test_get_tcs_sysdate(self):
-        liq = Liquidate('local_config_pu1.ini')
-        liq.init_db_conn('mariadb-173')
+        liq = Liquidate('local_config_master.ini')
         sysdate = liq.get_tcs_sysdate()
         self.assertIsNotNone(sysdate)
         logger.info(sysdate)
