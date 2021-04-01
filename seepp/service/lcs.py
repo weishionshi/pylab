@@ -57,12 +57,12 @@ class Liquidate:
         self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
     def get_tcs_sysdate(self):
-        sql = "select VC_VALUE from TC_TSYSPARAMETER where vc_item = %s and vc_tenant_id='10000'"
+        sql = "select VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s,%s) and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
         self.conn_tcs.ping(reconnect=True)
         try:
             # TODO:这么写报错,cursor.execute(SYS_PARAMATER_SQL, [pymysql.escape_string('TC_TSYSPARAMETER'), 'SYSDATE'])
-            cursor.execute(sql, ['SYSDATE'])
+            cursor.execute(sql, ['SYSDATE', 'LASTSYSDATE'])
             self.__logger.debug("sql:" + sql)
         except Exception as e:
             self.__logger.error(e, exc_info=True)
