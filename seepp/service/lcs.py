@@ -3,6 +3,7 @@
 # @author  : shiwx
 # @time    : 2021/1/28 19:21
 # @file    : lcs.py
+import datetime
 import json
 import urllib
 from urllib import request
@@ -24,7 +25,7 @@ class Liquidate:
         self.config_path = config_path
 
         # read config
-        self.__sections_map = file_util.LoadConfig.get_config_parser(config_path, encoding='gbk')
+        self.__sections_map = file_util.LoadConfig.get_config_parser(config_path, encoding='utf-8')
 
         # init db connections
         db_section = self.__sections_map.get('seepp').get('db')
@@ -57,31 +58,38 @@ class Liquidate:
         self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
     def get_tcs_sysdate(self):
-        sql = "select VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s,%s) and vc_tenant_id='10000'"
+        sql = "select VC_ITEM,VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s,%s) and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
         self.conn_tcs.ping(reconnect=True)
         try:
             # TODO:这么写报错,cursor.execute(SYS_PARAMATER_SQL, [pymysql.escape_string('TC_TSYSPARAMETER'), 'SYSDATE'])
             cursor.execute(sql, ['SYSDATE', 'LASTSYSDATE'])
             self.__logger.debug("sql:" + sql)
+            result = cursor.fetchall()
         except Exception as e:
             self.__logger.error(e, exc_info=True)
         finally:
             cursor.close()
-        return cursor.fetchone()[0]
+        # self.__logger.debug(type(result))
+        self.__logger.debug(result)
+        # self.__logger.debug(result[0][0])
+
+        return result
 
     def get_lcs_sysdate(self):
-        sql = "select VC_VALUE from LC_TSYSPARAMETER where vc_item = '%s' and vc_tenant_id='10000'" % ('SYSDATE')
+        sql = "select VC_ITEM,VC_VALUE from LC_TSYSPARAMETER where vc_item in (%s,%s) and vc_tenant_id='10000'"
         cursor = self.conn_lcs.cursor()
         self.conn_lcs.ping(reconnect=True)
         try:
-            cursor.execute(sql)
+            cursor.execute(sql, ['SYSDATE', 'LASTSYSDATE'])
             self.__logger.debug("sql:" + sql)
+            result = cursor.fetchall()
+            self.__logger.debug(result)
         except Exception as e:
             self.__logger.error(e, exc_info=True)
         finally:
             cursor.close()
-        return cursor.fetchone()[0]
+        return result
 
     def get_version(self):
         # 使用 cursor() 方法创建一个游标对象 cursor
@@ -107,6 +115,7 @@ class Liquidate:
         self.conn_lcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
+            cursor.execute(sql, [sys_date-1, 'LASTSYSDATE'])
             self.__logger.debug("sql:" + sql)
             self.conn_lcs.commit()
         except Exception as e:
@@ -187,10 +196,21 @@ class Liquidate:
             t.join()
 
     def pre_check(self, sysdate):
-        print('tcs SYSDATE:' + self.get_tcs_sysdate())
-        print('lcs SYSDATE:' + self.get_lcs_sysdate())
-        assert self.get_tcs_sysdate() == sysdate
-        assert self.get_lcs_sysdate() == sysdate
+        tcs_tuple = self.get_tcs_sysdate()
+        lcs_tuple = self.get_lcs_sysdate()
+        tcs_dict = {tcs_tuple[0][0]: tcs_tuple[0][1], tcs_tuple[1][0]: tcs_tuple[1][1]}
+        lcs_dict = {lcs_tuple[0][0]: lcs_tuple[0][1], lcs_tuple[1][0]: lcs_tuple[1][1]}
+        assert tcs_dict['SYSDATE'] == sysdate
+        assert lcs_dict['SYSDATE'] == sysdate
+        date11 = datetime.datetime.strptime(tcs_dict['SYSDATE'], '%Y%m%d')
+        date12 = datetime.datetime.strptime(tcs_dict['LASTSYSDATE'], '%Y%m%d')
+        self.__logger.debug("tcs inverval:" + str((date11 - date12).days))
+        assert (date11 - date12).days == 1
+
+        date11 = datetime.datetime.strptime(lcs_dict['SYSDATE'], '%Y%m%d')
+        date12 = datetime.datetime.strptime(lcs_dict['LASTSYSDATE'], '%Y%m%d')
+        self.__logger.debug("lcs inverval:" + str((date11 - date12).days))
+        assert (date11 - date12).days == 1
 
         self.get_all_machines_datetime()
         # check app health
