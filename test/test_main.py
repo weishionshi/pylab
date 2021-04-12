@@ -6,6 +6,7 @@
 import unittest
 from datetime import datetime
 
+from seepp.service.env import DeployEnv
 from seepp.service.lcs import Liquidate
 from util.file import file_util
 from util.logging.logger_manager import LoggerFactory
@@ -115,6 +116,11 @@ class UnitTest(unittest.TestCase):
         sysdate = liq.get_tcs_sysdate()
         self.assertIsNotNone(sysdate)
         logger.info(sysdate)
+
+    def test_env(self):
+        env = DeployEnv('local_config_master_ora.ini')
+        # env.append_config('tcs-181','springboot/config/test.properties','line1\nline2\nline3\n')
+        env.get_db_version()
 
 
 # 可以直接在用例里执行，也可以把用例组织为TestSuite执行
