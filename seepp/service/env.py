@@ -25,34 +25,43 @@ class EnvBase(object):
         self.sections_map = file_util.LoadConfig.get_config_parser(config_path, encoding='utf-8')
 
         # init db connections
-        db_section = self.sections_map.get('seepp').get('db')
-        self.__init_db_conn(db_section)
+        db_sec = self.sections_map.get('seepp').get('db')
+        self.db_section = self.sections_map.get(db_sec)
+        self.__init_db_conn()
 
         # init redis connections
-        rds_section = self.sections_map.get('seepp').get('redis')
-        self.__init_redis_conn(rds_section)
+        rds_sec = self.sections_map.get('seepp').get('redis')
+        self.rds_section = self.sections_map.get(rds_sec)
+        self.__init_redis_conn()
 
-    def __init_db_conn(self, section):
+    # def __del__(self):
+    #     if self.conn_tcs:
+    #         self.conn_tcs.close()
+    #     if self.conn_lcs:
+    #         self.conn_lcs.close()
+
+
+    def __init_db_conn(self):
         # init db connection
-        dbms = self.sections_map.get(section)['dbms']
-        db_host = self.sections_map.get(section)['host']
-        db_port = self.sections_map.get(section)['db_port']
-        db_pwd = self.sections_map.get(section)['db_password']
-        tcs_db_name = self.sections_map.get(section)['tcs_db_name']
-        lcs_db_name = self.sections_map.get(section)['lcs_db_name']
-        if dbms.lower() == 'mysql' or dbms.lower() == 'mariadb':
-            db_user = self.sections_map.get(section)['db_user']
+        self.dbms = self.db_section['dbms']
+        db_host = self.db_section['host']
+        db_port = self.db_section['db_port']
+        db_pwd = self.db_section['db_password']
+        tcs_db_name = self.db_section['tcs_db_name']
+        lcs_db_name = self.db_section['lcs_db_name']
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            db_user = self.db_section['db_user']
             self.conn_tcs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, tcs_db_name).get_connection()
             self.conn_lcs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, lcs_db_name).get_connection()
-        if dbms.lower() == 'oracle':
-            sid = self.sections_map.get(section)['sid']
-            self.conn_tcs = cx_Oracle.connect(tcs_db_name,db_pwd,db_host+':'+db_port+'/' + sid)
-            self.conn_lcs = cx_Oracle.connect(lcs_db_name,db_pwd,db_host+':'+db_port+'/' + sid)
+        if self.dbms.lower() == 'oracle':
+            sid = self.db_section['sid']
+            self.conn_tcs = cx_Oracle.connect(tcs_db_name, db_pwd, db_host + ':' + db_port + '/' + sid)
+            self.conn_lcs = cx_Oracle.connect(lcs_db_name, db_pwd, db_host + ':' + db_port + '/' + sid)
 
-    def __init_redis_conn(self, section):
-        pool = redis.ConnectionPool(host=self.sections_map.get(section)['host'],
-                                    port=self.sections_map.get(section)['rds_port'],
-                                    password=self.sections_map.get(section)['rds_password'], decode_responses=True)
+    def __init_redis_conn(self):
+        pool = redis.ConnectionPool(host=self.rds_section['host'],
+                                    port=self.rds_section['rds_port'],
+                                    password=self.rds_section['rds_password'], decode_responses=True)
         self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
 
@@ -78,8 +87,14 @@ class DeployEnv(EnvBase):
 
     def get_db_version(self):
         cursor = self.conn_tcs.cursor()
-        cursor.execute('select * from v$version')
-        print('oracle version:' + cursor.fetchone())
+        if self.dbms.lower() == 'oracle':
+            cursor.execute('select * from v$version')
+            print('oracle version:' + str(cursor.fetchone()))
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_tcs.ping(reconnect=True)
+            cursor.execute('select version()')
+            print('mysql version:' + str(cursor.fetchone()))
+        cursor.close()
 
     def __get_ssh_client(self, srv_name):
         srv_dict = self.sections_map[srv_name]
