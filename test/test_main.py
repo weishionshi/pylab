@@ -87,6 +87,11 @@ class UnitTest(unittest.TestCase):
         print(''.lower() in str1.lower())
         print('str: %s; int: %d' % ('abc', 110))
 
+    def test_list_tuple_dict(self):
+        (key,value) = 'key1,value'.split(',')
+        dict1 = {key:value}
+        print (dict1.__str__())
+
     def test_ssh_client(self):
         items = self.__sections_map['pkg_server']
         client = SSHClient(items.get('host'), items.get('user'), items.get('password'),
