@@ -78,11 +78,35 @@ class DeployEnv(EnvBase):
         pass
 
     def append_config(self, srv_name, file_name, string):
+        """
+        往指定配置文件里增加配置
+        @param srv_name: 服务名
+        @param file_name: 配置文件名,相对于配置文件中的deploy_path
+        @param string:
+        @return:
+        """
         config_path = self.sections_map.get(srv_name)['deploy_path'] + '/' + file_name
         self.logger.debug('config path is ' + config_path)
         cmd = 'echo -e \'%s\' >> %s' % (string, config_path)
 
         ssh_client = self.__get_ssh_client(srv_name)
+        ssh_client.exec_cmd(cmd=cmd)
+
+    def update_log_level(self, srv_name, log_level, file_name='springboot/config/log4j2.xml'):
+        """
+        修改log4j2.xml中的全局日志级别
+        <Property name="logging.level">info</Property>
+        @param srv_name:
+        @param log_level:
+        @param file_name: 日志配置文件名,相对于配置文件中的deploy_path
+        @return:
+        """
+        log4j_path = self.sections_map.get(srv_name)['deploy_path'] + '/' + file_name
+        cmd = 'sed -i \'s/<Property name="logging.level">.*$/<Property name="logging.level">%s<\\/Property>/g\' %s' % (log_level, log4j_path)
+        ssh_client = self.__get_ssh_client(srv_name)
+        ssh_client.exec_cmd(cmd=cmd)
+        cmd = 'grep \'name="logging.level"\' %s' % log4j_path
+        self.logger.info('log level after update is:')
         ssh_client.exec_cmd(cmd=cmd)
 
     def get_db_version(self):
