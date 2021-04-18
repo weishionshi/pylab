@@ -124,11 +124,12 @@ class UnitTest(unittest.TestCase):
         self.assertIsNotNone(sysdate)
         logger.info(sysdate)
 
-    def test_env(self):
+    def test_deploy_env_aio(self):
         env = DeployEnv('local_config_master_aio.ini')
         # env.append_config('tcs-181','springboot/config/test.properties','line1\nline2\nline3\n')
         # env.get_db_version()
-        env.update_log_level('tcs-158', 'info', 'tomcat/webapps-fintcs-tcs-service/ROOT/WEB-INF/classes/log4j2.xml')
+        # env.update_log_level('tcs-158', 'info', 'tomcat/webapps-fintcs-tcs-service/ROOT/WEB-INF/classes/log4j2.xml')
+        env.preset_tcs_db()
 
 
 # 可以直接在用例里执行，也可以把用例组织为TestSuite执行
