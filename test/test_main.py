@@ -77,20 +77,22 @@ class UnitTest(unittest.TestCase):
         test = 'abc'
         self.assertEqual('abc', test)
 
-
     def test_string(self):
         str1 = 'ABCDefg hijk'
+        str2 = 'sed -i \'s/<Property name="logging.level">.*$/<Property name="logging.level">%s<\\/Property>/g\' %s' % (
+        'debug', '/home/config/log4j2.xml')
         self.assertTrue('abc' in str1.lower())
-        time = datetime.datetime.now().strftime('%H:%M:%S')
+        time = datetime.now().strftime('%H:%M:%S')
         print('date -s "20201009 %s"' % time)
         print(''.lower())
         print(''.lower() in str1.lower())
         print('str: %s; int: %d' % ('abc', 110))
+        print(str2)
 
     def test_list_tuple_dict(self):
-        (key,value) = 'key1,value'.split(',')
-        dict1 = {key:value}
-        print (dict1.__str__())
+        (key, value) = 'key1,value'.split(',')
+        dict1 = {key: value}
+        print(dict1.__str__())
 
     def test_ssh_client(self):
         items = self.__sections_map['pkg_server']
@@ -123,9 +125,10 @@ class UnitTest(unittest.TestCase):
         logger.info(sysdate)
 
     def test_env(self):
-        env = DeployEnv('local_config_master_ora.ini')
+        env = DeployEnv('local_config_master_aio.ini')
         # env.append_config('tcs-181','springboot/config/test.properties','line1\nline2\nline3\n')
-        env.get_db_version()
+        # env.get_db_version()
+        env.update_log_level('tcs-158', 'info', 'tomcat/webapps-fintcs-tcs-service/ROOT/WEB-INF/classes/log4j2.xml')
 
 
 # 可以直接在用例里执行，也可以把用例组织为TestSuite执行
