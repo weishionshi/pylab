@@ -69,6 +69,41 @@ class DeployEnv(EnvBase):
     def __init__(self, config_path):
         EnvBase.__init__(self, config_path)
 
+    def preset_tcs_db(self):
+        """
+        开始测试销售系统前,先预置基础数据,比如打开本地缓存开关,更新所有用户密码,等等
+        :return:
+        """
+        sql_list = []
+        if self.dbms.lower() == 'oracle':
+            sql_list = []
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            sql_list = [
+                '''update TC_TSYSPARAMETER t set t.VC_VALUE = '1' 
+                where t.vc_tenant_id ='10000' 
+                and t.VC_ITEM = 'STATIC_DATA_CACHE_TYPE' ''',
+                "update tc_tsysparameter t  set t.VC_VALUE =(select replace(group_concat(distinct t1.C_CAPITAL_MODE),',','|') from tc_tcapitalacco t1)  where t.vc_tenant_id ='10000' and t.VC_ITEM = 'FTSUPPORTCAP' ",
+                "update tc_tcustinfodetail t set t.VC_DEAL_PWD = '123456' where t.VC_DEAL_PWD <>'123456'",
+                "update tc_taccoinfo t set t.VC_ALLOW_TRUST = '0|1|2|3|4' where 1=1",
+                "update tc_tfundacco t set t.C_FUND_ACCO_STATE = '0' where t.C_FUND_ACCO_STATE<>'0';"
+
+                ]
+
+            self.conn_tcs.ping(reconnect=True)
+
+        cursor = self.conn_tcs.cursor()
+        try:
+            for sql in sql_list:
+                rows = cursor.execute(sql)
+                self.logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+            self.conn_tcs.commit()
+
+        except Exception as e:
+            self.conn_tcs.rollback()
+            self.logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
     def update_jdbc(self, srv_name, new_jdbc_dict):
         # init ssh client
         ssh_client = self.__get_ssh_client(srv_name)
@@ -79,7 +114,7 @@ class DeployEnv(EnvBase):
 
     def append_config(self, srv_name, file_name, string):
         """
-        往指定配置文件里增加配置
+        往指定配置文件末尾追加配置
         @param srv_name: 服务名
         @param file_name: 配置文件名,相对于配置文件中的deploy_path
         @param string:
