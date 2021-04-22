@@ -58,12 +58,12 @@ class Liquidate:
         self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
     def get_tcs_sysdate(self):
-        sql = "select VC_ITEM,VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s,%s) and vc_tenant_id='10000'"
+        sql = "select VC_ITEM,VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
         self.conn_tcs.ping(reconnect=True)
         try:
             # TODO:这么写报错,cursor.execute(SYS_PARAMATER_SQL, [pymysql.escape_string('TC_TSYSPARAMETER'), 'SYSDATE'])
-            cursor.execute(sql, ['SYSDATE', 'LASTSYSDATE'])
+            cursor.execute(sql, ['SYSDATE'])
             self.__logger.debug("sql:" + sql)
             result = cursor.fetchall()
         except Exception as e:
@@ -77,11 +77,11 @@ class Liquidate:
         return result
 
     def get_lcs_sysdate(self):
-        sql = "select VC_ITEM,VC_VALUE from LC_TSYSPARAMETER where vc_item in (%s,%s) and vc_tenant_id='10000'"
+        sql = "select VC_ITEM,VC_VALUE from LC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
         cursor = self.conn_lcs.cursor()
         self.conn_lcs.ping(reconnect=True)
         try:
-            cursor.execute(sql, ['SYSDATE', 'LASTSYSDATE'])
+            cursor.execute(sql, ['SYSDATE'])
             self.__logger.debug("sql:" + sql)
             result = cursor.fetchall()
             self.__logger.debug(result)
@@ -111,11 +111,13 @@ class Liquidate:
     def set_lcs_sysdate(self, sys_date):
         self.__logger.info('original SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
+        delta = datetime.timedelta(days=-1)
+        last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta,'%Y%m%d')
         cursor = self.conn_lcs.cursor()
         self.conn_lcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
-            cursor.execute(sql, [sys_date-1, 'LASTSYSDATE'])
+            cursor.execute(sql, [last_sys_date, 'LASTSYSDATE'])
             self.__logger.debug("sql:" + sql)
             self.conn_lcs.commit()
         except Exception as e:
@@ -144,10 +146,13 @@ class Liquidate:
     def set_tcs_sysdate(self, sys_date):
         self.__logger.info('[original] SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
+        delta = datetime.timedelta(days=-1)
+        last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta,'%Y%m%d')
         cursor = self.conn_tcs.cursor()
         self.conn_tcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
+            cursor.execute(sql, [last_sys_date, 'LASTSYSDATE'])
             self.__logger.debug("sql:" + sql)
             self.conn_tcs.commit()
         except Exception as e:
@@ -170,6 +175,32 @@ class Liquidate:
             self.__logger.info('SYSDATE in redis [after HDEL] is NULL')
         else:
             self.__logger.info('SYSDATE in redis [after HDEL] is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
+
+    def set_tcs_sale_code(self,sale_code):
+        sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
+        cursor = self.conn_tcs.cursor()
+        self.conn_tcs.ping(reconnect=True)
+        try:
+            cursor.execute(sql, [sale_code, 'SALECODE'])
+            self.conn_tcs.commit()
+        except Exception as e:
+            self.conn_tcs.rollback()
+            self.__logger.error(e)
+        finally:
+            cursor.close()
+
+    def set_lcs_sale_code(self, sale_code):
+        sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
+        cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
+        try:
+            cursor.execute(sql, [sale_code, 'SALECODE'])
+            self.conn_lcs.commit()
+        except Exception as e:
+            self.conn_lcs.rollback()
+            self.__logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
 
     def sync_machine_time(self):
         pass
@@ -272,7 +303,6 @@ class Liquidate:
             self.__logger.info('refresh response of [%s] is [%s]' % (url, response))
             assert 'success' in response or 'ok' in response
 
-
     def update_qrtz_triggers(self, datetime):
         """
         update qrtz_triggers.next_fire_time
@@ -373,3 +403,4 @@ class Liquidate:
 
     def skip_process(self, prc_name):
         pass
+
