@@ -5,6 +5,7 @@
 # @file    : test_main.py
 import unittest
 from datetime import datetime
+from datetime import timedelta
 
 from seepp.service.env import DeployEnv
 from seepp.service.lcs import Liquidate
@@ -88,6 +89,13 @@ class UnitTest(unittest.TestCase):
         print(''.lower() in str1.lower())
         print('str: %s; int: %d' % ('abc', 110))
         print(str2)
+
+    def test_datetime(self):
+
+        date = datetime.strptime('20210420', "%Y%m%d").date()
+        delta = timedelta(days=20)
+        last_date = date - delta
+        print(last_date)
 
     def test_list_tuple_dict(self):
         (key, value) = 'key1,value'.split(',')
