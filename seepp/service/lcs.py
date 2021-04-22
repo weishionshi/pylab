@@ -229,19 +229,11 @@ class Liquidate:
     def pre_check(self, sysdate):
         tcs_tuple = self.get_tcs_sysdate()
         lcs_tuple = self.get_lcs_sysdate()
-        tcs_dict = {tcs_tuple[0][0]: tcs_tuple[0][1], tcs_tuple[1][0]: tcs_tuple[1][1]}
-        lcs_dict = {lcs_tuple[0][0]: lcs_tuple[0][1], lcs_tuple[1][0]: lcs_tuple[1][1]}
+        tcs_dict = {tcs_tuple[0][0]: tcs_tuple[0][1]}
+        lcs_dict = {lcs_tuple[0][0]: lcs_tuple[0][1]}
         assert tcs_dict['SYSDATE'] == sysdate
         assert lcs_dict['SYSDATE'] == sysdate
-        date11 = datetime.datetime.strptime(tcs_dict['SYSDATE'], '%Y%m%d')
-        date12 = datetime.datetime.strptime(tcs_dict['LASTSYSDATE'], '%Y%m%d')
-        self.__logger.debug("tcs inverval:" + str((date11 - date12).days))
-        assert (date11 - date12).days == 1
 
-        date11 = datetime.datetime.strptime(lcs_dict['SYSDATE'], '%Y%m%d')
-        date12 = datetime.datetime.strptime(lcs_dict['LASTSYSDATE'], '%Y%m%d')
-        self.__logger.debug("lcs inverval:" + str((date11 - date12).days))
-        assert (date11 - date12).days == 1
 
         self.get_all_machines_datetime()
         # check app health
