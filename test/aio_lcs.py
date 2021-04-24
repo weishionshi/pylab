@@ -13,7 +13,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_aio.ini')
-    SYSDATE = '20210419'
+    SYSDATE = '20210420'
     SALECODE = '225'
 
     @classmethod
@@ -35,8 +35,6 @@ class TestLiquidate(TestCase):
         """
         print('tearDownClass')
 
-    def test_pre_check(self):
-        self.liq.pre_check(self.SYSDATE)
 
     def test_init_env(self):
         """
@@ -52,11 +50,19 @@ class TestLiquidate(TestCase):
         self.liq.correct_task_excetpion()
         self.liq.correct_msg_excetpion_but()
 
+        # TODO:设置垫资户
         # TODO:把基础数据从交易库同步到清算库
 
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
         self.liq.set_tcs_sysdate(self.SYSDATE)
 
+    def test_pre_check(self):
+        self.liq.pre_check(self.SYSDATE)
+
     def test_refresh_service(self):
         self.liq.refresh_service()
+
+    def test_correct_exception(self):
+        self.liq.correct_task_excetpion()
+        self.liq.correct_msg_excetpion_but()
