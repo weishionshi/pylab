@@ -356,7 +356,7 @@ class Liquidate:
             cursor.close()
 
     def correct_task_excetpion(self):
-        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1',C_RECHECK_FLAG='1' where t.C_RESULT_STATE='0';"
+        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' where t.C_RESULT_STATE='0';"
         cursor = self.conn_lcs.cursor()
         self.conn_lcs.ping(reconnect=True)
         try:
