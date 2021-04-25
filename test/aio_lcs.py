@@ -61,7 +61,7 @@ class TestLiquidate(TestCase):
         self.liq.pre_check(self.SYSDATE)
 
     def test_refresh_service(self):
-        self.liq.refresh_service()
+        self.liq.refresh_services()
 
     def test_correct_exception(self):
         self.liq.correct_task_excetpion()
