@@ -7,6 +7,8 @@ import datetime
 import json
 import urllib
 from urllib import request
+
+from seepp.service.env import DeployEnv
 from util.logging.logger_manager import LoggerFactory
 from util.file import file_util
 from util.db.conn_builder import PyMysqlFactory
@@ -15,47 +17,15 @@ import time
 import redis
 
 
-class Liquidate:
+class Liquidate(DeployEnv):
     # init logger
     __logger = LoggerFactory(__name__).get_logger()
 
-    # __sections_map=None
+    # sections_map=None
 
     def __init__(self, config_path):
-        self.config_path = config_path
+        DeployEnv.__init__(self, config_path)
 
-        # read config
-        self.__sections_map = file_util.LoadConfig.get_config_parser(config_path, encoding='utf-8')
-
-        # init db connections
-        db_section = self.__sections_map.get('seepp').get('db')
-        self.__init_db_conn(db_section)
-
-        # init redis connections
-        rds_section = self.__sections_map.get('seepp').get('redis')
-        self.__init_redis_conn(rds_section)
-
-    def __init_db_conn(self, section):
-        # init mysql connection
-        dbms = self.__sections_map.get(section)['dbms']
-        db_host = self.__sections_map.get(section)['host']
-        db_port = self.__sections_map.get(section)['db_port']
-        db_user = self.__sections_map.get(section)['db_user']
-        db_pwd = self.__sections_map.get(section)['db_password']
-        tcs_db_name = self.__sections_map.get(section)['tcs_db_name']
-        lcs_db_name = self.__sections_map.get(section)['lcs_db_name']
-        if dbms.lower() == 'mysql' or dbms.lower() == 'mariadb':
-            self.conn_tcs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, tcs_db_name).get_connection()
-            self.conn_lcs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, lcs_db_name).get_connection()
-        if dbms.lower() == 'oracle':
-            pass
-            # TODO:init oracle connection
-
-    def __init_redis_conn(self, section):
-        pool = redis.ConnectionPool(host=self.__sections_map.get(section)['host'],
-                                    port=self.__sections_map.get(section)['rds_port'],
-                                    password=self.__sections_map.get(section)['rds_password'], decode_responses=True)
-        self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
     def get_tcs_sysdate(self):
         sql = "select VC_ITEM,VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
@@ -91,24 +61,10 @@ class Liquidate:
             cursor.close()
         return result
 
-    def get_version(self):
-        # 使用 cursor() 方法创建一个游标对象 cursor
-        cursor = self.conn_tcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
-
-        # 使用 execute()  方法执行 SQL 查询
-        cursor.execute("SELECT VERSION()")
-
-        # 使用 fetchone() 方法获取单条数据.
-        data = cursor.fetchone()
-
-        self.__logger("Database version : %s " % data)
-
-    """
-    set SYSDATE in DB and refresh redis
-    """
-
     def set_lcs_sysdate(self, sys_date):
+        """
+        set SYSDATE and LASTSYSDATE in DB and refresh redis
+        """
         self.__logger.info('original SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         delta = datetime.timedelta(days=-1)
@@ -207,13 +163,13 @@ class Liquidate:
 
     def get_all_machines_datetime(self):
         command = 'date +"%Y-%m-%d %H:%M:%S" '
-        all_list = self.__sections_map.get('seepp').get('services').split('|')
-        all_list.append(self.__sections_map.get('seepp').get('db'))
+        all_list = self.sections_map.get('seepp').get('services').split('|')
+        all_list.append(self.sections_map.get('seepp').get('db'))
         self.__logger.debug('all machines:' + str(all_list))
 
         t_pool = []
         for service in all_list:
-            items = self.__sections_map[service]
+            items = self.sections_map[service]
             t = ParamikoThreading(
                 host=items.get("host", "localhost"),
                 username=items.get("user", "root"),
@@ -245,9 +201,9 @@ class Liquidate:
         """
         后台应用健康检查
         """
-        srv_list = self.__sections_map.get('seepp').get('services').split('|')
+        srv_list = self.sections_map.get('seepp').get('services').split('|')
         for service in srv_list:
-            items = self.__sections_map[service]
+            items = self.sections_map[service]
             url = 'http://' + items.get("host") + ':' + items.get("port") + '/health'
             self.__logger.debug('url:' + url)
             headers = {
@@ -274,26 +230,13 @@ class Liquidate:
         """
         pass
 
-    def refresh_service(self):
+    def refresh_services(self):
         """
-        后台应用健康检查
+        刷新缓存
         """
-        srv_list = self.__sections_map.get('seepp').get('services').split('|')
-        for service in srv_list:
-            items = self.__sections_map[service]
-            url = 'http://' + items.get("host") + ':' + items.get("port") + '/refresh'
-            self.__logger.debug('url:' + url)
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'}
-            # 重构useragent
-            req = urllib.request.Request(url=url, headers=headers)
-            # 发送请求获取响应对象(urlopen)
-            res = urllib.request.urlopen(req)
-            # 获取响应内容,并转换成python dict
-            response = res.read().decode()
-            self.__logger.debug(response)
-            self.__logger.info('refresh response of [%s] is [%s]' % (url, response))
-            assert 'success' in response or 'ok' in response
+        srv_list = self.sections_map.get('seepp').get('services').split('|')
+        for srv in srv_list:
+            self.refresh_service(srv)
 
     def update_qrtz_triggers(self, datetime):
         """
