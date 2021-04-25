@@ -3,6 +3,8 @@
 # @author  : shiwx
 # @time    : 4/10/21 10:44
 # @file    : env.py
+import urllib
+
 import cx_Oracle
 import redis
 
@@ -154,6 +156,22 @@ class DeployEnv(EnvBase):
             cursor.execute('select version()')
             print('mysql version:' + str(cursor.fetchone()))
         cursor.close()
+
+    def refresh_service(self, srv_name):
+        items = self.sections_map[srv_name]
+        url = 'http://' + items.get("host") + ':' + items.get("port") + '/refresh'
+        self.logger.debug('url:' + url)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'}
+        # 重构useragent
+        req = urllib.request.Request(url=url, headers=headers)
+        # 发送请求获取响应对象(urlopen)
+        res = urllib.request.urlopen(req)
+        # 获取响应内容,并转换成python dict
+        response = res.read().decode()
+        self.logger.debug(response)
+        self.logger.info('refresh response of [%s] is [%s]' % (url, response))
+        assert 'success' in response or 'ok' in response
 
     def __get_ssh_client(self, srv_name):
         srv_dict = self.sections_map[srv_name]
