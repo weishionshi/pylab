@@ -298,6 +298,34 @@ class Liquidate(DeployEnv):
         finally:
             cursor.close()
 
+    def reset_ta_deal_flag(self, deal_flag):
+        sql = "update LC_TTAINFO t set t.C_TA_DEAL_FLAG= %s where t.C_TA_STATE='1'"
+        cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
+        try:
+            rows = cursor.execute(sql, [deal_flag])
+            self.conn_lcs.commit()
+            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+        except Exception as e:
+            self.conn_lcs.rollback()
+            self.__logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
+    def reset_lcs_process(self, process_name):
+        sql = "update LC_TDEALPROCESS t set t.C_RUN_STATE='0'  where t.VC_MAIN_PROCESS_NAME = %s;"
+        cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
+        try:
+            rows = cursor.execute(sql, [process_name])
+            self.conn_lcs.commit()
+            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+        except Exception as e:
+            self.conn_lcs.rollback()
+            self.__logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
     def correct_task_excetpion(self):
         sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' where t.C_RESULT_STATE='0';"
         cursor = self.conn_lcs.cursor()
