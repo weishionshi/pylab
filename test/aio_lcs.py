@@ -13,7 +13,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_aio.ini')
-    SYSDATE = '20210420'
+    SYSDATE = '20210421'
     SALECODE = '225'
 
     @classmethod
@@ -66,3 +66,17 @@ class TestLiquidate(TestCase):
     def test_correct_exception(self):
         self.liq.correct_task_excetpion()
         self.liq.correct_msg_excetpion_but()
+
+    def test_prepare_deal_data(self):
+        """
+        处理确认数据,前置准备
+        @return:
+        """
+        self.liq.correct_task_excetpion()
+        self.liq.correct_msg_excetpion_but()
+
+        # tainfo.C_TA_DEAL_FLAG
+        self.liq.reset_ta_deal_flag('00')
+
+        # 处理确认数据
+        self.liq.reset_lcs_process('DEALDATA')
