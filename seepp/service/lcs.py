@@ -312,6 +312,25 @@ class Liquidate(DeployEnv):
         finally:
             cursor.close()
 
+    def reset_ta_exp_liq_file(self, flag='0'):
+        """
+        清算导出确认文件标志位
+        @param flag: C_EXP_LIQUIDATE_FILE字段的值
+        @return:
+        """
+        sql = "update LC_TTAINFO t set t.C_EXP_LIQUIDATE_FILE= %s where t.C_TA_STATE ='1';"
+        cursor = self.conn_lcs.cursor()
+        self.conn_lcs.ping(reconnect=True)
+        try:
+            rows = cursor.execute(sql, [flag])
+            self.conn_lcs.commit()
+            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+        except Exception as e:
+            self.conn_lcs.rollback()
+            self.__logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
     def reset_lcs_process(self, process_name):
         sql = "update LC_TDEALPROCESS t set t.C_RUN_STATE='0'  where t.VC_MAIN_PROCESS_NAME = %s;"
         cursor = self.conn_lcs.cursor()

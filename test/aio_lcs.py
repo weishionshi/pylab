@@ -61,6 +61,10 @@ class TestLiquidate(TestCase):
         self.liq.pre_check(self.SYSDATE)
 
     def test_refresh_service(self):
+        """
+        刷新所有服务的缓存
+        @return:
+        """
         self.liq.refresh_services()
 
     def test_correct_exception(self):
@@ -80,3 +84,16 @@ class TestLiquidate(TestCase):
 
         # 处理确认数据
         self.liq.reset_lcs_process('DEALDATA')
+
+    def test_prepare_task_exportliqfile(self):
+        """
+        触发定时任务,导出清算文件(给交易),T003
+        @return:
+        """
+        #  更新LC_TTAINFO表的C_EXP_LIQUIDATE_FILE字段
+        self.liq.reset_ta_exp_liq_file('0')
+
+        self.liq.correct_task_excetpion()
+        self.liq.correct_msg_excetpion_but()
+
+        self.liq.trigger_auto_task('EXPORTLIQFILE')
