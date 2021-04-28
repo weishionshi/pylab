@@ -3,6 +3,7 @@
 # @author  : shiwx27477
 # @time    : 2020/4/14 9:53
 # @file    : test_main.py
+import os
 import unittest
 from datetime import datetime
 from datetime import timedelta
@@ -122,9 +123,9 @@ class UnitTest(unittest.TestCase):
         client.exec_cmd_nb(cmd)
         # self.assertIsNotNone(latest_dir, 'lastest cannot be null')
 
-    @unittest.skip("skip this case.")
+    # @unittest.skip("skip this case.")
     def test_osutil(self):
-        pass
+        print (str(os.environ))
 
     def test_get_tcs_sysdate(self):
         liq = Liquidate('local_config_master.ini')
