@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : shiwx27477
 # @time    : 2021/3/21 17:47
-# @file    : master_v202102.py
+# @file    : master_my_v202102.py
 from unittest import TestCase
 
 from seepp.service.lcs import Liquidate
@@ -12,7 +12,7 @@ from util.logging.logger_manager import LoggerFactory
 class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
-    liq = Liquidate('local_config_master.ini')
+    liq = Liquidate('local_config_master_my.ini')
     SYSDATE = '20210318'
 
     @classmethod
@@ -61,4 +61,9 @@ class TestLiquidate(TestCase):
         # 清除异常消息,除了本次的message_id
         self.liq.correct_msg_excetpion_but()
 
+    def test_update_log_level(self):
+        self.liq.update_log_level('query-181', 'info')
 
+    def test_update_log_2kafka(self):
+        self.liq.update_log_2kafka('query-181', 'true')
+        self.liq.update_log_2kafka('acs-181', 'true')

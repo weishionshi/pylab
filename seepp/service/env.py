@@ -146,6 +146,24 @@ class DeployEnv(EnvBase):
         self.logger.info('log level after update is:')
         ssh_client.exec_cmd(cmd=cmd)
 
+    def update_log_2kafka(self, srv_name, flag, file_name='springboot/config/application.properties'):
+        """
+        是否把日志发送到日志中心的kafka
+        @param srv_name:
+        @param flag: true,or false
+        @return:
+        """
+        app_path = self.sections_map.get(srv_name)['deploy_path'] + '/' + file_name
+        cmd1 = 'sed -i \'s/kafka.support=.*$/kafka.support=%s/g\' %s' % (flag, app_path)
+        cmd2 = 'sed -i \'s/rpc.trace.log=.*$/rpc.trace.log=%s/g\' %s' % (flag, app_path)
+        ssh_client = self.__get_ssh_client(srv_name)
+        ssh_client.exec_cmd(cmd=cmd1)
+        ssh_client.exec_cmd(cmd=cmd2)
+
+        cmd = 'grep \'rpc.trace.log\' %s' % app_path
+        self.logger.info('[rpc.trace.log] after update is:')
+        ssh_client.exec_cmd(cmd=cmd)
+
     def get_db_version(self):
         cursor = self.conn_tcs.cursor()
         if self.dbms.lower() == 'oracle':

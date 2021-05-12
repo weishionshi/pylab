@@ -16,7 +16,7 @@ from util.ssh.ssh_client import SSHClient
 import logging
 import paramiko
 
-CFG_FILE = 'local_config_master.ini'
+CFG_FILE = 'local_config_master_my.ini'
 # init logger
 logger = LoggerFactory(__name__).get_logger()
 
@@ -128,7 +128,7 @@ class UnitTest(unittest.TestCase):
         print (str(os.environ))
 
     def test_get_tcs_sysdate(self):
-        liq = Liquidate('local_config_master.ini')
+        liq = Liquidate('local_config_master_my.ini')
         sysdate = liq.get_tcs_sysdate()
         self.assertIsNotNone(sysdate)
         logger.info(sysdate)
