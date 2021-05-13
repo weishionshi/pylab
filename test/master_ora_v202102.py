@@ -13,7 +13,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_ora.ini')
-    SYSDATE = '20210318'
+    SYSDATE = '20201203'
 
     @classmethod
     def setUpClass(cls):
@@ -37,11 +37,12 @@ class TestLiquidate(TestCase):
     def test_pre_check(self):
         self.liq.pre_check(sysdate=self.SYSDATE)
 
+    def test_health_check(self):
+        self.liq.check_service_health()
+
     def test_refresh_services(self):
         self.liq.refresh_services()
 
-    def test_update_log_level(self):
-        self.liq.update_log_level('acs-181','info',)
 
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
@@ -64,4 +65,11 @@ class TestLiquidate(TestCase):
         # 清除异常消息,除了本次的message_id
         self.liq.correct_msg_excetpion_but()
 
+    def test_update_log_level(self):
+        self.liq.update_log_level('acs-72', 'info')
+        self.liq.update_log_level('tcs-72', 'info')
+        self.liq.update_log_level('query-72', 'info')
 
+    def test_update_log_2kafka(self):
+        self.liq.update_log_2kafka('query-72', 'true')
+        self.liq.update_log_2kafka('acs-72', 'true')
