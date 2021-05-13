@@ -4,9 +4,6 @@
 # @time    : 2021/1/28 19:21
 # @file    : lcs.py
 import datetime
-import json
-import urllib
-from urllib import request
 
 from seepp.service.env import DeployEnv
 from util.logging.logger_manager import LoggerFactory
@@ -197,46 +194,6 @@ class Liquidate(DeployEnv):
 
         # TODO:硬件健康检查(磁盘)
 
-    def check_service_health(self):
-        """
-        后台应用健康检查
-        """
-        srv_list = self.sections_map.get('seepp').get('services').split('|')
-        for service in srv_list:
-            items = self.sections_map[service]
-            url = 'http://' + items.get("host") + ':' + items.get("port") + '/health'
-            self.__logger.debug('url:' + url)
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'}
-            # 重构useragent
-            req = urllib.request.Request(url=url, headers=headers)
-            # 发送请求获取响应对象(urlopen)
-            res = urllib.request.urlopen(req)
-            # 获取响应内容,并转换成python dict
-            response = json.loads(res.read().decode())
-            self.__logger.debug(response)
-            self.__logger.info('[%s] is [%s]' % (url, response['status']))
-            assert response['status'] == 'UP'
-
-    def check_db_ping(self):
-        """
-        数据库健康检查
-        """
-        pass
-
-    def check_hardware_health(self):
-        """
-        硬件资源健康检查
-        """
-        pass
-
-    def refresh_services(self):
-        """
-        刷新缓存
-        """
-        srv_list = self.sections_map.get('seepp').get('services').split('|')
-        for srv in srv_list:
-            self.refresh_service(srv)
 
     def update_qrtz_triggers(self, datetime):
         """

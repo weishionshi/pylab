@@ -3,8 +3,10 @@
 # @author  : shiwx
 # @time    : 4/10/21 10:44
 # @file    : env.py
-import urllib
 
+import json
+import urllib
+from urllib import request
 import cx_Oracle
 import redis
 
@@ -70,7 +72,47 @@ class EnvBase(object):
 class DeployEnv(EnvBase):
     def __init__(self, config_path):
         EnvBase.__init__(self, config_path)
+        
+    def check_service_health(self):
+        """
+        后台应用健康检查
+        """
+        srv_list = self.sections_map.get('seepp').get('services').split('|')
+        for service in srv_list:
+            items = self.sections_map[service]
+            url = 'http://' + items.get("host") + ':' + items.get("port") + '/health'
+            self.logger.debug('url:' + url)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'}
+            # 重构useragent
+            req = urllib.request.Request(url=url, headers=headers)
+            # 发送请求获取响应对象(urlopen)
+            res = urllib.request.urlopen(req)
+            # 获取响应内容,并转换成python dict
+            response = json.loads(res.read().decode())
+            self.logger.debug(response)
+            self.logger.info('[%s] is [%s]' % (url, response['status']))
+            assert response['status'] == 'UP'
 
+    def check_db_ping(self):
+        """
+        数据库健康检查
+        """
+        pass
+
+    def check_hardware_health(self):
+        """
+        硬件资源健康检查
+        """
+        pass
+
+    def refresh_services(self):
+        """
+        刷新缓存
+        """
+        srv_list = self.sections_map.get('seepp').get('services').split('|')
+        for srv in srv_list:
+            self.refresh_service(srv)
     def preset_tcs_db(self):
         """
         开始测试销售系统前,先预置基础数据,比如打开本地缓存开关,更新所有用户密码,等等
