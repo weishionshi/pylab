@@ -13,7 +13,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_my.ini')
-    SYSDATE = '20210318'
+    SYSDATE = '20210517'
 
     @classmethod
     def setUpClass(cls):
@@ -37,8 +37,10 @@ class TestLiquidate(TestCase):
     def test_pre_check(self):
         self.liq.pre_check(sysdate=self.SYSDATE)
 
-    def test_refresh_service(self):
-        self.liq.refresh_service()
+    def test_refresh_services(self):
+        # self.liq.refresh_services()
+        self.liq.refresh_service('acs-181')
+        self.liq.refresh_service('tcs-181')
 
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
@@ -62,7 +64,9 @@ class TestLiquidate(TestCase):
         self.liq.correct_msg_excetpion_but()
 
     def test_update_log_level(self):
-        self.liq.update_log_level('query-181', 'info')
+        # self.liq.update_log_level('acs-181', 'info')
+        self.liq.update_log_level('tcs-181', 'info')
+        # self.liq.update_log_level('query-181', 'info')
 
     def test_update_log_2kafka(self):
         self.liq.update_log_2kafka('query-181', 'true')
