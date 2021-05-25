@@ -73,7 +73,7 @@ class DeployEnv(EnvBase):
     def __init__(self, config_path):
         EnvBase.__init__(self, config_path)
         
-    def check_service_health(self):
+    def check_services_health(self):
         """
         后台应用健康检查
         """
@@ -113,6 +113,7 @@ class DeployEnv(EnvBase):
         srv_list = self.sections_map.get('seepp').get('services').split('|')
         for srv in srv_list:
             self.refresh_service(srv)
+
     def preset_tcs_db(self):
         """
         开始测试销售系统前,先预置基础数据,比如打开本地缓存开关,更新所有用户密码,等等

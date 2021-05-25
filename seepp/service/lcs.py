@@ -65,7 +65,7 @@ class Liquidate(DeployEnv):
         self.__logger.info('original SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         delta = datetime.timedelta(days=-1)
-        last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta,'%Y%m%d')
+        last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta, '%Y%m%d')
         cursor = self.conn_lcs.cursor()
         self.conn_lcs.ping(reconnect=True)
         try:
@@ -99,13 +99,15 @@ class Liquidate(DeployEnv):
     def set_tcs_sysdate(self, sys_date):
         self.__logger.info('[original] SYSDATE in db is [%s]' % self.get_tcs_sysdate())
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
+        sql2 = "update sequence t set t.VC_APPEND_DECIMAL = %s where t.NAME = 'QREQUESTNO' and t.VC_SERIAL_TYPE = 'DB_REDIS_RANGE'"
         delta = datetime.timedelta(days=-1)
-        last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta,'%Y%m%d')
+        last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta, '%Y%m%d')
         cursor = self.conn_tcs.cursor()
         self.conn_tcs.ping(reconnect=True)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             cursor.execute(sql, [last_sys_date, 'LASTSYSDATE'])
+            cursor.execute(sql2, [sys_date])
             self.__logger.debug("sql:" + sql)
             self.conn_tcs.commit()
         except Exception as e:
@@ -190,7 +192,7 @@ class Liquidate(DeployEnv):
 
         self.get_all_machines_datetime()
         # check app health
-        self.check_service_health()
+        self.check_services_health()
 
         # TODO:硬件健康检查(磁盘)
 
