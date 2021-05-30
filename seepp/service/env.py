@@ -234,6 +234,26 @@ class DeployEnv(EnvBase):
         self.logger.info('refresh response of [%s] is [%s]' % (url, response))
         assert 'success' in response or 'ok' in response
 
+    def call_procedure(self,db_kind,procedure_name,args):
+        if db_kind == 'tcs':
+            cursor = self.conn_tcs.cursor()
+            try:
+                cursor.callproc(procedure_name,args)
+            except Exception as e:
+                self.logger.error(e.__str__())
+            cursor.close()
+            self.conn_tcs.commit()
+
+        if db_kind == 'lcs':
+            cursor = self.conn_lcs.cursor()
+        try:
+            result = cursor.callproc(procedure_name, args)
+        except Exception as e:
+            self.logger.error(e.__str__())
+        cursor.close()
+        self.conn_lcs.commit()
+
+
     def __get_ssh_client(self, srv_name):
         srv_dict = self.sections_map[srv_name]
         ssh_client = SSHClient(srv_dict['host'], srv_dict['user'], srv_dict['password'], srv_dict['ssh_port'])

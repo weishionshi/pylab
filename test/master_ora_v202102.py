@@ -3,6 +3,7 @@
 # @author  : shiwx27477
 # @time    : 2021/4/27 10:00
 # @file    : master_ora_v202102.py
+import time
 from unittest import TestCase
 
 from seepp.service.lcs import Liquidate
@@ -74,3 +75,11 @@ class TestLiquidate(TestCase):
     def test_update_log_2kafka(self):
         self.liq.update_log_2kafka('query-72', 'true')
         self.liq.update_log_2kafka('acs-72', 'true')
+
+    def test_call_procedure(self):
+        for i in range(1, 13):
+            ta_code = str(i).zfill(2)
+            product_code = str(i).zfill(2) + '0001'
+            self.logger.info(ta_code + ',' + product_code)
+            self.liq.call_procedure('lcs','CREATE_REQUEST_HISRORY',['10',ta_code,product_code.zfill(6),'022','10'])
+            time.sleep(2)
