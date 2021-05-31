@@ -76,10 +76,22 @@ class TestLiquidate(TestCase):
         self.liq.update_log_2kafka('query-72', 'true')
         self.liq.update_log_2kafka('acs-72', 'true')
 
-    def test_call_procedure(self):
-        for i in range(1, 13):
+    def test_call_create_lcs_request_hisrory(self):
+        cursor = self.liq.conn_lcs.cursor()
+
+        try:
+            cursor.execute('truncate table LC_THREQUEST')
+
+        except Exception as e:
+            self.conn_tcs.rollback()
+            self.logger.error(e, exec_info=True)
+        finally:
+            cursor.close()
+
+        for i in range(1, 13):  # ta个数
             ta_code = str(i).zfill(2)
-            product_code = str(i).zfill(2) + '0001'
-            self.logger.info(ta_code + ',' + product_code)
-            self.liq.call_procedure('lcs','CREATE_REQUEST_HISRORY',['10',ta_code,product_code.zfill(6),'022','10'])
-            time.sleep(2)
+            for j in range(1, 6):  # 产品个数
+                product_code = ta_code + str(j).zfill(4)
+                self.logger.info(ta_code + ',' + product_code)
+                self.liq.call_procedure('lcs', 'CREATE_LCS_REQUEST_HISTORY', ['50000', ta_code, product_code, '022', '100'])
+                time.sleep(2)
