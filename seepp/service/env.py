@@ -44,7 +44,6 @@ class EnvBase(object):
     #     if self.conn_lcs:
     #         self.conn_lcs.close()
 
-
     def __init_db_conn(self):
         # init db connection
         self.dbms = self.db_section['dbms']
@@ -72,7 +71,7 @@ class EnvBase(object):
 class DeployEnv(EnvBase):
     def __init__(self, config_path):
         EnvBase.__init__(self, config_path)
-        
+
     def check_services_health(self):
         """
         后台应用健康检查
@@ -132,7 +131,7 @@ class DeployEnv(EnvBase):
                 "update tc_taccoinfo t set t.VC_ALLOW_TRUST = '0|1|2|3|4' where 1=1",
                 "update tc_tfundacco t set t.C_FUND_ACCO_STATE = '0' where t.C_FUND_ACCO_STATE<>'0';"
 
-                ]
+            ]
 
             self.conn_tcs.ping(reconnect=True)
 
@@ -182,7 +181,8 @@ class DeployEnv(EnvBase):
         @return:
         """
         log4j_path = self.sections_map.get(srv_name)['deploy_path'] + '/' + file_name
-        cmd = 'sed -i \'s/<Property name="logging.level">.*$/<Property name="logging.level">%s<\\/Property>/g\' %s' % (log_level, log4j_path)
+        cmd = 'sed -i \'s/<Property name="logging.level">.*$/<Property name="logging.level">%s<\\/Property>/g\' %s' % (
+        log_level, log4j_path)
         ssh_client = self.__get_ssh_client(srv_name)
         ssh_client.exec_cmd(cmd=cmd)
         cmd = 'grep \'name="logging.level"\' %s' % log4j_path
@@ -234,11 +234,11 @@ class DeployEnv(EnvBase):
         self.logger.info('refresh response of [%s] is [%s]' % (url, response))
         assert 'success' in response or 'ok' in response
 
-    def call_procedure(self,db_kind,procedure_name,args):
+    def call_procedure(self, db_kind, procedure_name, args):
         if db_kind == 'tcs':
             cursor = self.conn_tcs.cursor()
             try:
-                cursor.callproc(procedure_name,args)
+                cursor.callproc(procedure_name, args)
             except Exception as e:
                 self.logger.error(e.__str__())
             cursor.close()
@@ -248,11 +248,11 @@ class DeployEnv(EnvBase):
             cursor = self.conn_lcs.cursor()
         try:
             result = cursor.callproc(procedure_name, args)
+            self.logger.info(procedure_name + ' procedure result:' + str(result))
         except Exception as e:
             self.logger.error(e.__str__())
         cursor.close()
         self.conn_lcs.commit()
-
 
     def __get_ssh_client(self, srv_name):
         srv_dict = self.sections_map[srv_name]
