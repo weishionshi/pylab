@@ -14,7 +14,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_ora.ini')
-    SYSDATE = '20201203'
+    SYSDATE = '20210601'
 
     @classmethod
     def setUpClass(cls):
@@ -43,8 +43,8 @@ class TestLiquidate(TestCase):
 
     def test_refresh_services(self):
         # self.liq.refresh_services()
-        self.liq.refresh_service('acs-72')
-        self.liq.refresh_service('tcs-72')
+        self.liq.refresh_service('acs-158')
+        self.liq.refresh_service('tcs-158')
 
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
@@ -68,13 +68,13 @@ class TestLiquidate(TestCase):
         self.liq.correct_msg_excetpion_but()
 
     def test_update_log_level(self):
-        self.liq.update_log_level('acs-72', 'info')
-        self.liq.update_log_level('tcs-72', 'info')
-        self.liq.update_log_level('query-72', 'info')
+        self.liq.update_log_level('acs-158', 'info')
+        self.liq.update_log_level('tcs-158', 'info')
+        self.liq.update_log_level('query-158', 'info')
 
     def test_update_log_2kafka(self):
-        self.liq.update_log_2kafka('query-72', 'true')
-        self.liq.update_log_2kafka('acs-72', 'true')
+        self.liq.update_log_2kafka('query-158', 'true')
+        self.liq.update_log_2kafka('acs-158', 'true')
 
     def test_call_create_lcs_request_hisrory(self):
         cursor = self.liq.conn_lcs.cursor()
