@@ -10,6 +10,7 @@ from util.logging.logger_manager import LoggerFactory
 from util.file import file_util
 from util.db.conn_builder import PyMysqlFactory
 from util.ssh.ssh_client import ParamikoThreading
+from util.db.dbutil import convert_mysql_2_oracle
 import time
 import redis
 
@@ -25,9 +26,13 @@ class Liquidate(DeployEnv):
 
 
     def get_tcs_sysdate(self):
-        sql = "select VC_ITEM,VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
+        sql = "select VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_tcs.ping(reconnect=True)
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+            self.__logger.debug('oracle format:' + sql)
         try:
             # TODO:这么写报错,cursor.execute(SYS_PARAMATER_SQL, [pymysql.escape_string('TC_TSYSPARAMETER'), 'SYSDATE'])
             cursor.execute(sql, ['SYSDATE'])
@@ -46,7 +51,11 @@ class Liquidate(DeployEnv):
     def get_lcs_sysdate(self):
         sql = "select VC_ITEM,VC_VALUE from LC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_tcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
         try:
             cursor.execute(sql, ['SYSDATE'])
             self.__logger.debug("sql:" + sql)
@@ -67,7 +76,12 @@ class Liquidate(DeployEnv):
         delta = datetime.timedelta(days=-1)
         last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta, '%Y%m%d')
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+            self.__logger.debug('oracle format:' + sql)
         try:
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             cursor.execute(sql, [last_sys_date, 'LASTSYSDATE'])
@@ -103,11 +117,16 @@ class Liquidate(DeployEnv):
         delta = datetime.timedelta(days=-1)
         last_sys_date = datetime.datetime.strftime(datetime.datetime.strptime(sys_date, "%Y%m%d") + delta, '%Y%m%d')
         cursor = self.conn_tcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+
         try:
+            if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+                self.conn_tcs.ping(reconnect=True)
+                cursor.execute(sql2, [sys_date])
             cursor.execute(sql, [sys_date, 'SYSDATE'])
             cursor.execute(sql, [last_sys_date, 'LASTSYSDATE'])
-            cursor.execute(sql2, [sys_date])
             self.__logger.debug("sql:" + sql)
             self.conn_tcs.commit()
         except Exception as e:
@@ -134,7 +153,12 @@ class Liquidate(DeployEnv):
     def set_tcs_sale_code(self,sale_code):
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_tcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+
         try:
             cursor.execute(sql, [sale_code, 'SALECODE'])
             self.conn_tcs.commit()
@@ -147,7 +171,12 @@ class Liquidate(DeployEnv):
     def set_lcs_sale_code(self, sale_code):
         sql = "update LC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_tcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+
         try:
             cursor.execute(sql, [sale_code, 'SALECODE'])
             self.conn_lcs.commit()
