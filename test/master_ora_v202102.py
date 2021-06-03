@@ -41,10 +41,13 @@ class TestLiquidate(TestCase):
     def test_health_check(self):
         self.liq.check_services_health()
 
-    def test_refresh_services(self):
-        # self.liq.refresh_services()
+    def test_refresh_service(self):
         self.liq.refresh_service('acs-158')
         self.liq.refresh_service('tcs-158')
+
+    def test_refresh_services(self):
+        self.liq.refresh_services()
+        # self.liq.refresh_services_lcs()
 
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)

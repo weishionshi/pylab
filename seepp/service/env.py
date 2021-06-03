@@ -113,6 +113,14 @@ class DeployEnv(EnvBase):
         for srv in srv_list:
             self.refresh_service(srv)
 
+    def refresh_services_lcs(self):
+        """
+        刷新清算服务缓存
+        """
+        srv_list = self.sections_map.get('seepp').get('lcs_services').split('|')
+        for srv in srv_list:
+            self.refresh_service(srv)
+
     def preset_tcs_db(self):
         """
         开始测试销售系统前,先预置基础数据,比如打开本地缓存开关,更新所有用户密码,等等
