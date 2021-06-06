@@ -13,6 +13,7 @@ from util.ssh.ssh_client import ParamikoThreading
 from util.db.dbutil import convert_mysql_2_oracle
 import time
 import redis
+from cx_Oracle import Error
 
 
 class Liquidate(DeployEnv):
@@ -23,7 +24,6 @@ class Liquidate(DeployEnv):
 
     def __init__(self, config_path):
         DeployEnv.__init__(self, config_path)
-
 
     def get_tcs_sysdate(self):
         sql = "select VC_VALUE from TC_TSYSPARAMETER where vc_item in (%s) and vc_tenant_id='10000'"
@@ -150,7 +150,7 @@ class Liquidate(DeployEnv):
         else:
             self.__logger.info('SYSDATE in redis [after HDEL] is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
 
-    def set_tcs_sale_code(self,sale_code):
+    def set_tcs_sale_code(self, sale_code):
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
         cursor = self.conn_tcs.cursor()
         if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
@@ -218,13 +218,11 @@ class Liquidate(DeployEnv):
         assert tcs_dict['SYSDATE'] == sysdate
         assert lcs_dict['SYSDATE'] == sysdate
 
-
         self.get_all_machines_datetime()
         # check app health
         self.check_services_health()
 
         # TODO:硬件健康检查(磁盘)
-
 
     def update_qrtz_triggers(self, datetime):
         """
@@ -236,7 +234,8 @@ class Liquidate(DeployEnv):
         where 1=1  and t.SCHED_NAME='liq';
         """
         cursor = self.conn_tcs.cursor()
-        self.conn_tcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_tcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql, [datetime])
             self.conn_tcs.commit()
@@ -248,7 +247,8 @@ class Liquidate(DeployEnv):
             cursor.close()
 
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql, [datetime])
             self.conn_lcs.commit()
@@ -275,7 +275,8 @@ class Liquidate(DeployEnv):
     def trigger_auto_task(self, task_name):
         sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s;"
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql, [task_name])
             self.conn_lcs.commit()
@@ -289,7 +290,8 @@ class Liquidate(DeployEnv):
     def reset_ta_deal_flag(self, deal_flag):
         sql = "update LC_TTAINFO t set t.C_TA_DEAL_FLAG= %s where t.C_TA_STATE='1'"
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql, [deal_flag])
             self.conn_lcs.commit()
@@ -308,7 +310,8 @@ class Liquidate(DeployEnv):
         """
         sql = "update LC_TTAINFO t set t.C_EXP_LIQUIDATE_FILE= %s where t.C_TA_STATE ='1';"
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
         try:
             rows = cursor.execute(sql, [flag])
             self.conn_lcs.commit()
@@ -322,50 +325,111 @@ class Liquidate(DeployEnv):
     def reset_lcs_process(self, process_name):
         sql = "update LC_TDEALPROCESS t set t.C_RUN_STATE='0'  where t.VC_MAIN_PROCESS_NAME = %s;"
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
-        try:
-            rows = cursor.execute(sql, [process_name])
-            self.conn_lcs.commit()
-            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
-        except Exception as e:
-            self.conn_lcs.rollback()
-            self.__logger.error(e, exec_info=True)
-        finally:
-            cursor.close()
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
+            try:
+                rows = cursor.execute(sql, [process_name])
+                self.conn_lcs.commit()
+                self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+            except Exception as e:
+                self.conn_lcs.rollback()
+                self.__logger.error(e, exec_info=True)
+            finally:
+                cursor.close()
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+            try:
+                cursor.prepare(sql)
+                cursor.execute(None, [process_name])
+                rows = cursor.rowcount
+                self.conn_lcs.commit()
+                self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
+            except Error as e:
+                self.conn_lcs.rollback()
+                self.__logger.error(e.__str__())
+            finally:
+                cursor.close()
 
     def correct_task_excetpion(self):
-        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' where t.C_RESULT_STATE='0';"
+        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' \
+                   where t.C_RESULT_STATE='0' "
+
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
-        try:
-            rows = cursor.execute(sql1)
-            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
-            self.conn_lcs.commit()
-        except Exception as e:
-            self.conn_lcs.rollback()
-            self.__logger.error(e, exec_info=True)
-        finally:
-            cursor.close()
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
+            try:
+                rows = cursor.execute(sql1)
+                if rows > 0:
+                    self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
+                    self.conn_lcs.commit()
+            except Exception as e:
+                self.conn_lcs.rollback()
+                self.__logger.error(e, exec_info=True)
+            finally:
+                cursor.close()
+
+        if self.dbms.lower() == 'oracle':
+            try:
+                cursor.prepare(sql1)
+                cursor.execute(None)
+                rows = cursor.rowcount
+                self.__logger.info("[%d] rows affected by sql1: [%s]" % (rows, sql1))
+                if rows > 0:
+                    self.conn_lcs.commit()
+            except Error as e:
+                self.conn_lcs.rollback()
+                # self.__logger.error(e.args.code)
+            finally:
+                cursor.close()
 
     def correct_msg_excetpion_but(self, msg_id=''):
-        sql1 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' "
-        sql2 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' where t.C_MESSAGE_STATE<>'2' and  VC_MESSAGE_ID<>%s "
+        sql1 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' \
+                    where t.C_MESSAGE_STATE<>'2' "
+        sql2 = "update LC_TMESSAGEDEAL t set t.C_MESSAGE_STATE = '2' \
+                    where t.C_MESSAGE_STATE<>'2' and  VC_MESSAGE_ID<>%s "
         cursor = self.conn_lcs.cursor()
-        self.conn_lcs.ping(reconnect=True)
 
-        try:
-            if msg_id == '':
-                rows = cursor.execute(sql1)
-                self.__logger.info("[%d] rows affected by sql1: [%s]" % (rows, sql1))
-            else:
-                rows = cursor.execute(sql2, [msg_id])
-                self.__logger.info("[%d] rows affected by sql2: [%s]" % (rows, sql2))
-            self.conn_lcs.commit()
-        except Exception as e:
-            self.conn_lcs.rollback()
-            self.__logger.error(e, exec_info=True)
-        finally:
-            cursor.close()
+        if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
+            self.conn_lcs.ping(reconnect=True)
+
+            try:
+                if msg_id == '':
+                    rows = cursor.execute(sql1)
+                    self.__logger.info("[%d] rows affected by sql1: [%s]" % (rows, sql1))
+                else:
+                    rows = cursor.execute(sql2, [msg_id])
+                    self.__logger.info("[%d] rows affected by sql2: [%s]" % (rows, sql2))
+                self.conn_lcs.commit()
+            except Exception as e:
+                self.conn_lcs.rollback()
+                self.__logger.error(e, exec_info=True)
+            finally:
+                cursor.close()
+
+        if self.dbms.lower() == 'oracle':
+            sql2 = convert_mysql_2_oracle(sql2)
+            self.__logger.debug('oracle format:' + sql2)
+            try:
+                if msg_id == '':
+                    cursor.prepare(sql1)
+                    cursor.execute(None)
+                    rows = cursor.rowcount
+                    self.__logger.info("[%d] rows affected by sql1: [%s]" % (rows, sql1))
+                    if rows > 0:
+                        self.conn_lcs.commit()
+                else:
+                    cursor.prepare(sql2)
+                    cursor.execute(None, [msg_id])
+                    rows = cursor.rowcount
+                    self.__logger.info("[%d] rows affected by sql2: [%s]" % (rows, sql2))
+                    if rows > 0:
+                        self.conn_lcs.commit()
+            except Error as e:
+                self.conn_lcs.rollback()
+                # self.__logger.error(e.args.message)
+            finally:
+                cursor.close()
 
     """
     skip process manually
@@ -373,4 +437,3 @@ class Liquidate(DeployEnv):
 
     def skip_process(self, prc_name):
         pass
-
