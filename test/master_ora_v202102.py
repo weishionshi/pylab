@@ -14,7 +14,7 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_ora.ini')
-    SYSDATE = '20210601'
+    SYSDATE = '20210602'
 
     @classmethod
     def setUpClass(cls):
@@ -70,7 +70,7 @@ class TestLiquidate(TestCase):
         self.liq.correct_task_excetpion()
 
         # 清除异常消息,除了本次的message_id
-        self.liq.correct_msg_excetpion_but()
+        self.liq.correct_msg_excetpion_but('73affd91-8c84-4b7d-a6e8-2b40cc37522d')
 
     def test_update_log_level(self):
         self.liq.update_log_level('acs-158', 'info')
