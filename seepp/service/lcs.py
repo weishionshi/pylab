@@ -137,7 +137,9 @@ class Liquidate(DeployEnv):
 
         self.__logger.info('SYSDATE in db [after] update is [%s]' % self.get_tcs_sysdate())
 
-        # update redis
+        # update redis  TODO:改成直接flush db0
+        # SET hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"} {"autoModify":"0","describe":"系统日期","item":"SYSDATE","kind":"运维类","sysName":"清算中心","tenantId":"10000","type":"5","value":"20210603"}
+        # hsfs:lcs:SYSPARAMETER:{"item":"LASTSYSDATE","tenantId":"10000"}
         if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
             self.__logger.info('[original] SYSDATE in redis is [NULL]')
         else:
