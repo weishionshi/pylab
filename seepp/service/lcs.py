@@ -354,7 +354,7 @@ class Liquidate(DeployEnv):
                 cursor.close()
 
     def correct_task_excetpion(self):
-        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' \
+        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' ,VC_OPERATOR_NO='python' \
                    where t.C_RESULT_STATE='0' "
 
         cursor = self.conn_lcs.cursor()
