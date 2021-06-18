@@ -64,9 +64,9 @@ class TestLiquidate(TestCase):
         self.liq.correct_msg_excetpion_but()
 
     def test_update_log_level(self):
-        self.liq.update_log_level('acs-181', 'info')
-        self.liq.update_log_level('tcs-181', 'info')
-        # self.liq.update_log_level('query-181', 'info')
+        # self.liq.update_log_level('acs-181', 'info')
+        # self.liq.update_log_level('tcs-181', 'info')
+        self.liq.update_log_level('query-181', 'info')
 
     def test_update_log_2kafka(self):
         self.liq.update_log_2kafka('query-181', 'true')

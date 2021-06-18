@@ -73,9 +73,13 @@ class TestLiquidate(TestCase):
         self.liq.correct_msg_excetpion_but('73affd91-8c84-4b7d-a6e8-2b40cc37522d')
 
     def test_update_log_level(self):
-        self.liq.update_log_level('acs-158', 'info')
-        self.liq.update_log_level('tcs-158', 'info')
-        self.liq.update_log_level('query-158', 'info')
+        level = 'info'
+        # self.liq.update_log_level('acs-158', 'info')
+        # self.liq.update_log_level('tcs-158', 'info')
+        # self.liq.update_log_level('query-158', 'info')
+
+        self.liq.update_log_level('lcs-158', level)
+        self.liq.update_log_level('lcs-175', level)
 
     def test_update_log_2kafka(self):
         self.liq.update_log_2kafka('query-158', 'true')
