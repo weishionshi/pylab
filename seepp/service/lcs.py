@@ -62,7 +62,7 @@ class Liquidate(DeployEnv):
             result = cursor.fetchall()
             self.__logger.debug(result)
         except Exception as e:
-            self.__logger.error(e, exc_info=True)
+            self.__logger.error(e)
         finally:
             cursor.close()
         return result
@@ -275,17 +275,20 @@ class Liquidate(DeployEnv):
         pass
 
     def trigger_auto_task(self, task_name):
-        sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s;"
+        sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s"
         cursor = self.conn_lcs.cursor()
         if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
-            self.conn_lcs.ping(reconnect=True)
+            self.conn_tcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+
         try:
-            rows = cursor.execute(sql, [task_name])
+            cursor.execute(sql, [task_name,])
             self.conn_lcs.commit()
-            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
         except Exception as e:
             self.conn_lcs.rollback()
-            self.__logger.error(e, exec_info=True)
+            self.__logger.error(e)
         finally:
             cursor.close()
 
