@@ -66,20 +66,37 @@ class TestLiquidate(TestCase):
         self.liq.trigger_auto_task('EXPORTREQUESTFILE')
 
     def test_trigger_message_task(self):
+        message_id = 'd45840e4-f990-4166-9104-246e41c4f8a7'
         # 清除异常任务
         self.liq.correct_task_excetpion()
 
         # 清除异常消息,除了本次的message_id
-        self.liq.correct_msg_excetpion_but('73affd91-8c84-4b7d-a6e8-2b40cc37522d')
+        self.liq.correct_msg_excetpion_but(message_id)
+
+    def test_trigger_exportliqfile(self):
+        """
+        触发清算定时任务:EXPORTLIQFILE-导出清算文件,
+        @return:
+        """
+        task_name = 'EXPORTLIQFILE'
+        # 清除异常任务
+        self.liq.correct_task_excetpion()
+        # 修改时间和状态
+        self.liq.trigger_auto_task(task_name)
+
 
     def test_update_log_level(self):
         level = 'info'
-        # self.liq.update_log_level('acs-158', 'info')
-        # self.liq.update_log_level('tcs-158', 'info')
-        # self.liq.update_log_level('query-158', 'info')
+        # self.liq.update_log_level('acs-158', level)
+        # self.liq.update_log_level('tcs-158', level)
+        # self.liq.update_log_level('query-158', level)
 
-        self.liq.update_log_level('lcs-158', level)
-        self.liq.update_log_level('lcs-175', level)
+        self.liq.update_log_level('acs-72', level)
+        self.liq.update_log_level('tcs-72', level)
+        self.liq.update_log_level('query-72', level)
+
+        # self.liq.update_log_level('lcs-158', level)
+        # self.liq.update_log_level('lcs-175', level)
 
     def test_update_log_2kafka(self):
         self.liq.update_log_2kafka('query-158', 'true')
