@@ -15,6 +15,8 @@ class TestLiquidate(TestCase):
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_ora.ini')
     SYSDATE = '20210603'
+    REQ_DATE = '20210602'
+    CONFIRM_DATE = '20210603'
 
     @classmethod
     def setUpClass(cls):
@@ -52,8 +54,8 @@ class TestLiquidate(TestCase):
         self.liq.refresh_services_lcs()
 
     def test_set_sysdate(self):
-        self.liq.set_lcs_sysdate(self.SYSDATE)
-        self.liq.set_tcs_sysdate(self.SYSDATE)
+        self.liq.set_lcs_sysdate(self.REQ_DATE)
+        self.liq.set_tcs_sysdate(self.REQ_DATE)
 
     def test_trigger_auto_task(self):
         # 清除异常任务
@@ -91,11 +93,12 @@ class TestLiquidate(TestCase):
         # self.liq.update_log_level('tcs-158', level)
         # self.liq.update_log_level('query-158', level)
 
-        self.liq.update_log_level('acs-72', level)
-        self.liq.update_log_level('tcs-72', level)
-        self.liq.update_log_level('query-72', level)
+        # self.liq.update_log_level('acs-72', level)
+        # self.liq.update_log_level('tcs-72', level)
+        # self.liq.update_log_level('query-72', level)
 
-        # self.liq.update_log_level('lcs-158', level)
+        self.liq.update_log_level('lcs-158', level)
+        self.liq.update_log_level('process-158', level)
         # self.liq.update_log_level('lcs-175', level)
 
     def test_update_log_2kafka(self):
