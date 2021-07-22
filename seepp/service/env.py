@@ -64,7 +64,9 @@ class EnvBase(object):
     def __init_redis_conn(self):
         pool = redis.ConnectionPool(host=self.rds_section['host'],
                                     port=self.rds_section['rds_port'],
-                                    password=self.rds_section['rds_password'], decode_responses=True)
+                                    password=self.rds_section['rds_password'],
+                                    db=0,
+                                    decode_responses=True)
         self.rds = redis.Redis(connection_pool=pool, charset='UTF-8', encoding='UTF-8')
 
 
