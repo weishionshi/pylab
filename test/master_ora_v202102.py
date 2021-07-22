@@ -14,9 +14,9 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_ora.ini')
-    SYSDATE = '20210603'
-    REQ_DATE = '20210602'
-    CONFIRM_DATE = '20210603'
+    SYSDATE = '20210707'
+    REQ_DATE = '20210707'
+    CONFIRM_DATE = '20210708'
 
     @classmethod
     def setUpClass(cls):

@@ -13,7 +13,9 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_my.ini')
-    SYSDATE = '20210517'
+    SYSDATE = '20210707'
+    REQ_DATE = '20210707'
+    CONFIRM_DATE = '20210708'
 
     @classmethod
     def setUpClass(cls):
@@ -45,6 +47,7 @@ class TestLiquidate(TestCase):
     def test_set_sysdate(self):
         self.liq.set_lcs_sysdate(self.SYSDATE)
         self.liq.set_tcs_sysdate(self.SYSDATE)
+        self.liq.rds.flushdb()
 
     def test_trigger_auto_task(self):
         # 清除异常任务
