@@ -366,8 +366,8 @@ class Liquidate(DeployEnv):
             self.conn_lcs.ping(reconnect=True)
             try:
                 rows = cursor.execute(sql1)
+                self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
                 if rows > 0:
-                    self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
                     self.conn_lcs.commit()
             except Exception as e:
                 self.conn_lcs.rollback()
