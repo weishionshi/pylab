@@ -12,7 +12,7 @@ from util.logging.logger_manager import LoggerFactory
 class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
-    liq = Liquidate('local_config_master_aio.ini')
+    liq = Liquidate('local_config_aio_ora.ini')
     SYSDATE = '20210421'
     SALECODE = '225'
 
