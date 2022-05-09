@@ -13,7 +13,13 @@ class TestLiquidate(TestCase):
     # init logger
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_my.ini')
-    SYSDATE = '20210517'
+    SYSDATE = '20210707'
+    REQ_DATE = '20210707'
+    CONFIRM_DATE = '20210708'
+
+    QSYSDATE = '20210318'
+    QREQ_DATE = '20210317'
+    QCONFIRM_DATE = '20210318'
 
     @classmethod
     def setUpClass(cls):
@@ -43,8 +49,10 @@ class TestLiquidate(TestCase):
         self.liq.refresh_service('tcs-181')
 
     def test_set_sysdate(self):
-        self.liq.set_lcs_sysdate(self.SYSDATE)
-        self.liq.set_tcs_sysdate(self.SYSDATE)
+        self.liq.set_lcs_sysdate(self.QSYSDATE)
+        self.liq.set_tcs_sysdate(self.QSYSDATE)
+        self.liq.rds.flushdb()
+        self.logger.info('redis flushed!')
 
     def test_trigger_auto_task(self):
         # 清除异常任务
@@ -61,12 +69,12 @@ class TestLiquidate(TestCase):
         self.liq.correct_task_excetpion()
 
         # 清除异常消息,除了本次的message_id
-        self.liq.correct_msg_excetpion_but()
+        self.liq.correct_msg_excetpion_but('13f970e4-1339-41f1-a78b-cc033cfd802c')
 
     def test_update_log_level(self):
-        self.liq.update_log_level('acs-181', 'info')
-        self.liq.update_log_level('tcs-181', 'info')
-        # self.liq.update_log_level('query-181', 'info')
+        # self.liq.update_log_level('acs-181', 'info')
+        # self.liq.update_log_level('tcs-181', 'info')
+        self.liq.update_log_level('query-181', 'info')
 
     def test_update_log_2kafka(self):
         self.liq.update_log_2kafka('query-181', 'true')

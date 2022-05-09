@@ -62,7 +62,7 @@ class Liquidate(DeployEnv):
             result = cursor.fetchall()
             self.__logger.debug(result)
         except Exception as e:
-            self.__logger.error(e, exc_info=True)
+            self.__logger.error(e)
         finally:
             cursor.close()
         return result
@@ -95,20 +95,21 @@ class Liquidate(DeployEnv):
 
         self.__logger.info('SYSDATE in db [after update] is [%s]' % self.get_lcs_sysdate())
 
-        if self.rds.get('{"item":"SYSDATE","tenantId":"10000"}') is None:
-            self.__logger.info('[original ]SYSDATE in redis is [NULL]')
-        else:
-            self.__logger.info(
-                '[original] SYSDATE in redis is [%s]' % self.rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
 
-        # hdel sysdate
-        self.rds.delete('{"item":"SYSDATE","tenantId":"10000"}')
-        time.sleep(6)
-        if self.rds.get('{"item":"SYSDATE","tenantId":"10000"}') is None:
-            self.__logger.info('SYSDATE in redis [after DEL] is NULL')
-        else:
-            self.__logger.info(
-                'SYSDATE in redis [after DEL] is [%s]' % self.rds.get('{"item":"SYSDATE","tenantId":"10000"}'))
+        # if self.rds.get('hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"}') is None:
+        #     self.__logger.info('[original ]SYSDATE in redis is [NULL]')
+        # else:
+        #     self.__logger.info(
+        #         '[original] SYSDATE in redis is [%s]' % self.rds.get('hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"}'))
+        #
+        # # hdel sysdate
+        # self.rds.delete('hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"}')
+        # time.sleep(6)
+        # if self.rds.get('hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"}') is None:
+        #     self.__logger.info('SYSDATE in redis [after DEL] is NULL')
+        # else:
+        #     self.__logger.info(
+        #         'SYSDATE in redis [after DEL] is [%s]' % self.rds.get('hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"}'))
 
     def set_tcs_sysdate(self, sys_date):
         self.__logger.info('[original] SYSDATE in db is [%s]' % self.get_tcs_sysdate())
@@ -138,17 +139,19 @@ class Liquidate(DeployEnv):
         self.__logger.info('SYSDATE in db [after] update is [%s]' % self.get_tcs_sysdate())
 
         # update redis
-        if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
-            self.__logger.info('[original] SYSDATE in redis is [NULL]')
-        else:
-            self.__logger.info('[original] SYSDATE in redis is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
-        # hdel sysdate
-        self.rds.hdel('sys_param_10000', 'SYSDATE')
-        time.sleep(6)
-        if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
-            self.__logger.info('SYSDATE in redis [after HDEL] is NULL')
-        else:
-            self.__logger.info('SYSDATE in redis [after HDEL] is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
+        # SET hsfs:lcs:SYSPARAMETER:{"item":"SYSDATE","tenantId":"10000"} {"autoModify":"0","describe":"系统日期","item":"SYSDATE","kind":"运维类","sysName":"清算中心","tenantId":"10000","type":"5","value":"20210603"}
+        # hsfs:lcs:SYSPARAMETER:{"item":"LASTSYSDATE","tenantId":"10000"}
+        # if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
+        #     self.__logger.info('[original] SYSDATE in redis is [NULL]')
+        # else:
+        #     self.__logger.info('[original] SYSDATE in redis is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
+        # # hdel sysdate
+        # self.rds.hdel('sys_param_10000', 'SYSDATE')
+        # time.sleep(6)
+        # if self.rds.hget('sys_param_10000', 'SYSDATE') is None:
+        #     self.__logger.info('SYSDATE in redis [after HDEL] is NULL')
+        # else:
+        #     self.__logger.info('SYSDATE in redis [after HDEL] is [%s]' % self.rds.hget('sys_param_10000', 'SYSDATE'))
 
     def set_tcs_sale_code(self, sale_code):
         sql = "update TC_TSYSPARAMETER set vc_value= %s where vc_item = %s and vc_tenant_id='10000'"
@@ -273,17 +276,20 @@ class Liquidate(DeployEnv):
         pass
 
     def trigger_auto_task(self, task_name):
-        sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s;"
+        sql = "update LC_TAUTOTASKCFG t set t.VC_LAST_DATE_TIME='',t.C_TASK_STATE='0' ,t.VC_BEGIN_TIME='000000' where t.VC_TASK_NAME = %s"
         cursor = self.conn_lcs.cursor()
         if self.dbms.lower() == 'mysql' or self.dbms.lower() == 'mariadb':
-            self.conn_lcs.ping(reconnect=True)
+            self.conn_tcs.ping(reconnect=True)
+
+        if self.dbms.lower() == 'oracle':
+            sql = convert_mysql_2_oracle(sql)
+
         try:
-            rows = cursor.execute(sql, [task_name])
+            cursor.execute(sql, [task_name,])
             self.conn_lcs.commit()
-            self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql))
         except Exception as e:
             self.conn_lcs.rollback()
-            self.__logger.error(e, exec_info=True)
+            self.__logger.error(e)
         finally:
             cursor.close()
 
@@ -352,7 +358,7 @@ class Liquidate(DeployEnv):
                 cursor.close()
 
     def correct_task_excetpion(self):
-        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' \
+        sql1 = "update LC_TAUTOTASKRESULT t set t.C_RESULT_STATE='1' ,VC_OPERATOR_NO='python' \
                    where t.C_RESULT_STATE='0' "
 
         cursor = self.conn_lcs.cursor()
@@ -360,8 +366,8 @@ class Liquidate(DeployEnv):
             self.conn_lcs.ping(reconnect=True)
             try:
                 rows = cursor.execute(sql1)
+                self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
                 if rows > 0:
-                    self.__logger.info("[%d] rows affected by sql: [%s]" % (rows, sql1))
                     self.conn_lcs.commit()
             except Exception as e:
                 self.conn_lcs.rollback()
