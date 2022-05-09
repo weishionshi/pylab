@@ -15,6 +15,7 @@ class TestLiquidate(TestCase):
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_ora.ini')
     SYSDATE = '20210601'
+    BASE_DATA_MACHINE_DATE = '20220425'  # 20210603
 
     @classmethod
     def setUpClass(cls):
@@ -98,5 +99,9 @@ class TestLiquidate(TestCase):
             for j in range(1, 6):  # 产品个数
                 product_code = ta_code + str(j).zfill(4)
                 self.logger.info(ta_code + ',' + product_code)
-                self.liq.call_procedure('lcs', 'CREATE_LCS_REQUEST_HISTORY', ['50000', ta_code, product_code, '022', '100'])
+                self.liq.call_procedure('lcs', 'CREATE_LCS_REQUEST_HISTORY',
+                                        ['50000', ta_code, product_code, '022', '100'])
                 time.sleep(2)
+
+    def test_restore_db_tcs(self):
+        self.liq.restore_db_tcs(['m', self.BASE_DATA_MACHINE_DATE])
