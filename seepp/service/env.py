@@ -123,6 +123,22 @@ class DeployEnv(EnvBase):
         for srv in srv_list:
             self.refresh_service(srv)
 
+    def restore_db_tcs(self, args):
+        """
+        开始测试销售系统前,先恢复基础存量数据,即把接口新跑出来的数据先删除
+        :return:
+        """
+        #删除开户数据
+        self.call_procedure('tcs','TCS_DELETE_OPEN_ACCO', args)
+
+        #删除增开交易账户数据
+        self.call_procedure('tcs','TCS_DELETE_ADD_TRADE_ACCO', args)
+        #删除交易申请
+
+        #删除账户申请
+
+        #删除资金流水
+
     def preset_tcs_db(self):
         """
         开始测试销售系统前,先预置基础数据,比如打开本地缓存开关,更新所有用户密码,等等
@@ -256,13 +272,13 @@ class DeployEnv(EnvBase):
 
         if db_kind == 'lcs':
             cursor = self.conn_lcs.cursor()
-        try:
-            result = cursor.callproc(procedure_name, args)
-            self.logger.info(procedure_name + ' procedure result:' + str(result))
-        except Exception as e:
-            self.logger.error(e.__str__())
-        cursor.close()
-        self.conn_lcs.commit()
+            try:
+                result = cursor.callproc(procedure_name, args)
+                self.logger.info(procedure_name + ' procedure result:' + str(result))
+            except Exception as e:
+                self.logger.error(e.__str__())
+            cursor.close()
+            self.conn_lcs.commit()
 
     def __get_ssh_client(self, srv_name):
         srv_dict = self.sections_map[srv_name]
