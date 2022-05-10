@@ -30,7 +30,9 @@ class EnvBase(object):
 
         # init db connections
         db_sec = self.sections_map.get('seepp').get('db')
+        db_sec_qs = self.sections_map.get('seepp').get('db_qs')
         self.db_section = self.sections_map.get(db_sec)
+        self.db_section_qs = self.sections_map.get(db_sec_qs)
         self.__init_db_conn()
 
         # init redis connections
@@ -45,7 +47,7 @@ class EnvBase(object):
     #         self.conn_lcs.close()
 
     def __init_db_conn(self):
-        # init db connection
+        # init db connection for trade env
         self.dbms = self.db_section['dbms']
         db_host = self.db_section['host']
         db_port = self.db_section['db_port']
@@ -60,6 +62,23 @@ class EnvBase(object):
             sid = self.db_section['sid']
             self.conn_tcs = cx_Oracle.connect(tcs_db_name, db_pwd, db_host + ':' + db_port + '/' + sid)
             self.conn_lcs = cx_Oracle.connect(lcs_db_name, db_pwd, db_host + ':' + db_port + '/' + sid)
+
+        # init db connection for liq env
+        self.dbms_qs = self.db_section_qs['dbms']
+        db_host = self.db_section_qs['host']
+        db_port = self.db_section_qs['db_port']
+        db_pwd = self.db_section_qs['db_password']
+        tcs_db_name = self.db_section_qs['tcs_db_name']
+        lcs_db_name = self.db_section_qs['lcs_db_name']
+        if self.dbms_qs.lower() == 'mysql' or self.dbms_qs.lower() == 'mariadb':
+            db_user = self.db_section_qs['db_user']
+            self.conn_tcs_qs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, tcs_db_name).get_connection()
+            self.conn_lcs_qs = PyMysqlFactory(db_host, int(db_port), db_user, db_pwd, lcs_db_name).get_connection()
+        if self.dbms_qs.lower() == 'oracle':
+            sid = self.db_section_qs['sid']
+            self.conn_tcs_qs = cx_Oracle.connect(tcs_db_name, db_pwd, db_host + ':' + db_port + '/' + sid)
+            self.conn_lcs_qs = cx_Oracle.connect(lcs_db_name, db_pwd, db_host + ':' + db_port + '/' + sid)
+
 
     def __init_redis_conn(self):
         pool = redis.ConnectionPool(host=self.rds_section['host'],
@@ -119,7 +138,7 @@ class DeployEnv(EnvBase):
         """
         刷新清算服务缓存
         """
-        srv_list = self.sections_map.get('seepp').get('lcs_services').split('|')
+        srv_list = self.sections_map.get('seepp').get('qs_services').split('|')
         for srv in srv_list:
             self.refresh_service(srv)
 
