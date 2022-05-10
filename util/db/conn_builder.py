@@ -61,8 +61,8 @@ class PersistentDBPoolFactory:
             # ping MySQL服务端，检查是否服务可用。# 如：0 = None = never, 1 = default = whenever it is requested,
             # 2 = when a cursor is created, 4 = when a query is executed, 7 = always
             closeable=False,
-            # 如果为False时， conn.close() 实际上被忽略，供下次使用，只有线程关闭时，才会自动关闭链接。
-            # 如果为True时， conn.close()则关闭链接，那么再次调用pool.connection时就会报错，因为已经真的关闭了连接（pool.steady_connection()可以获取一个新的链接）
+            # 如果为False时， conn.close() 实际上被忽略，连接不会被关闭，只有线程关闭时，才会自动关闭链接。
+            # 如果为True时， conn.close()则关闭连接，那么再次调用pool.connection时就会报错，因为已经真的关闭了连接（pool.steady_connection()可以获取一个新的链接）
             threadlocal=None,  # 本线程独享值得对象，用于保存链接对象，如果链接对象被重置
             host=self.host,
             port=self.port,
