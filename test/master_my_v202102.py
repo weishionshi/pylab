@@ -14,9 +14,9 @@ class TestLiquidate(TestCase):
     logger = LoggerFactory(__name__).get_logger()
     liq = Liquidate('local_config_master_my.ini')
     # 公募交易
-    SYSDATE = '20210301'
-    REQ_DATE = '20210707'
-    CONFIRM_DATE = '20210708'
+    SYSDATE = '20211230'
+    REQ_DATE = '20211230'
+    CONFIRM_DATE = '20211231'
     # 公募清算
     QSYSDATE = '20210318'
     QREQ_DATE = '20210317'
@@ -72,6 +72,12 @@ class TestLiquidate(TestCase):
         self.liq.refresh_services_lcs()
 
     def test_set_sysdate(self):
+        self.liq.set_lcs_sysdate(self.SYSDATE)
+        self.liq.set_tcs_sysdate(self.SYSDATE)
+        self.liq.rds.flushdb()
+        self.logger.info('redis flushed!')
+
+    def test_set_qsysdate(self):
         self.liq.set_lcs_sysdate(self.QSYSDATE)
         self.liq.set_tcs_sysdate(self.QSYSDATE)
         self.liq.rds.flushdb()
