@@ -134,7 +134,7 @@ class UnitTest(unittest.TestCase):
         logger.info(sysdate)
 
     def test_deploy_env_aio(self):
-        env = DeployEnv('local_config_master_aio.ini')
+        env = DeployEnv('local_config_aio_my.ini')
         # env.append_config('tcs-181','springboot/config/test.properties','line1\nline2\nline3\n')
         # env.get_db_version()
         # env.update_log_level('tcs-158', 'info', 'tomcat/webapps-fintcs-tcs-service/ROOT/WEB-INF/classes/log4j2.xml')
