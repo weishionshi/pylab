@@ -4,6 +4,7 @@
 # @time    : 2021/4/27 10:00
 # @file    : master_ora_v202102.py
 import time
+from datetime import datetime
 from unittest import TestCase
 
 from seepp.service.lcs import Liquidate
@@ -125,3 +126,25 @@ class TestLiquidate(TestCase):
                 self.logger.info(ta_code + ',' + product_code)
                 self.liq.call_procedure('lcs', 'CREATE_LCS_REQUEST_HISTORY', ['50000', ta_code, product_code, '022', '100'])
                 time.sleep(2)
+
+    def test_restore_db_tcs(self):
+        end_date = datetime.now().strftime('%Y%m%d')
+        date_mode = 'm'
+        archive_flag = '1'
+        function_no = 'all'
+        # 删除开户数据
+        self.liq.call_procedure('tcs', 'TCS_DELETE_OPEN_ACCO',
+                                [date_mode, self.BASE_DATA_MACHINE_DATE, end_date, archive_flag])
+        # 删除增开交易账户数据
+        self.liq.call_procedure('tcs', 'TCS_DELETE_ADD_TRADE_ACCO',
+                                [date_mode, self.BASE_DATA_MACHINE_DATE, end_date, archive_flag])
+
+        # 批量删除交易申请
+        self.liq.call_procedure('tcs', 'TCS_ARCHIVE_TRADE_REQ',
+                                [date_mode, self.BASE_DATA_MACHINE_DATE, end_date, function_no])
+        # 批量删除账户申请
+        self.liq.call_procedure('tcs', 'TCS_ARCHIVE_ACCO_REQ',
+                                [date_mode, self.BASE_DATA_MACHINE_DATE, end_date, function_no])
+        # 批量删除资金流水
+        self.liq.call_procedure('tcs', 'TCS_ARCHIVE_FUND_CURRENT',
+                                [date_mode, self.BASE_DATA_MACHINE_DATE, end_date])
